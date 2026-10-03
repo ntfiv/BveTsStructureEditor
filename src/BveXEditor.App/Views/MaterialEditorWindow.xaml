@@ -1,0 +1,99 @@
+<Window x:Class="BveXEditor.App.Views.MaterialEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:BveXEditor.App.Views"
+        Title="色・テクスチャの編集" SizeToContent="WidthAndHeight" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{StaticResource PanelBrush}">
+    <Window.Resources>
+        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Width" Value="46" />
+            <EventSetter Event="KeyDown" Handler="OnFieldKeyDown" />
+        </Style>
+    </Window.Resources>
+    <StackPanel Margin="12,10">
+        <!-- 対象とテクスチャの見本 -->
+        <DockPanel Margin="0,0,0,8">
+            <Border DockPanel.Dock="Left" Width="96" Height="96" BorderBrush="{StaticResource LineBrush}" BorderThickness="1"
+                    Margin="0,0,10,0" ToolTip="テクスチャの見本（なければ拡散色）">
+                <Border.Background>
+                    <!-- 透明部分がわかるよう市松模様 -->
+                    <DrawingBrush TileMode="Tile" Viewport="0,0,12,12" ViewportUnits="Absolute">
+                        <DrawingBrush.Drawing>
+                            <DrawingGroup>
+                                <GeometryDrawing Brush="#FFFFFF" Geometry="M0,0 L2,0 2,2 0,2Z" />
+                                <GeometryDrawing Brush="#DDDDDD" Geometry="M0,0 L1,0 1,1 0,1Z M1,1 L2,1 2,2 1,2Z" />
+                            </DrawingGroup>
+                        </DrawingBrush.Drawing>
+                    </DrawingBrush>
+                </Border.Background>
+                <Grid>
+                    <Border x:Name="PreviewColor" />
+                    <Image x:Name="PreviewImage" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" />
+                </Grid>
+            </Border>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock x:Name="TargetText" FontWeight="SemiBold" TextWrapping="Wrap" MaxWidth="230" />
+                <TextBlock x:Name="TargetInfo" Foreground="{StaticResource SubTextBrush}" TextWrapping="Wrap" MaxWidth="230" Margin="0,2,0,0" />
+            </StackPanel>
+        </DockPanel>
+
+        <Grid x:Name="Fields">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="60" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Column="1" Text="R" HorizontalAlignment="Center" Style="{StaticResource FieldLabel}" />
+            <TextBlock Grid.Column="2" Text="G" HorizontalAlignment="Center" Style="{StaticResource FieldLabel}" />
+            <TextBlock Grid.Column="3" Text="B" HorizontalAlignment="Center" Style="{StaticResource FieldLabel}" />
+            <TextBlock Grid.Column="4" Text="A / 強さ" HorizontalAlignment="Center" Style="{StaticResource FieldLabel}" />
+            <TextBlock Grid.Row="1" Text="拡散色" Style="{StaticResource FieldLabel}" />
+            <TextBox Grid.Row="1" Grid.Column="1" x:Name="DR" />
+            <TextBox Grid.Row="1" Grid.Column="2" x:Name="DG" />
+            <TextBox Grid.Row="1" Grid.Column="3" x:Name="DB" />
+            <TextBox Grid.Row="1" Grid.Column="4" x:Name="DA" ToolTip="不透明度 (1 = 不透明)" />
+            <TextBlock Grid.Row="2" Text="色コード" Style="{StaticResource FieldLabel}" />
+            <StackPanel Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="4" Orientation="Horizontal">
+                <TextBox x:Name="HexColor" Width="80" ToolTip="#RRGGBB で入力して Enter" />
+                <Border x:Name="Swatch" Width="40" Height="20" BorderBrush="#888" BorderThickness="1" Margin="4,0"
+                        Cursor="Hand" MouseLeftButtonDown="OnSwatchClick" ToolTip="クリックでパレットを開く" />
+                <Button x:Name="PaletteButton" Content="パレット…" Click="OnOpenPalette"
+                        ToolTip="色相・明るさをドラッグしたり、基本の色・このメッシュの色・最近使った色から選んだりします" />
+                <Popup x:Name="PalettePopup" PlacementTarget="{Binding ElementName=PaletteButton}" Placement="Bottom"
+                       StaysOpen="False" AllowsTransparency="True" Closed="OnPaletteClosed">
+                    <local:ColorPalette x:Name="Palette" />
+                </Popup>
+            </StackPanel>
+            <TextBlock Grid.Row="3" Text="鏡面" Style="{StaticResource FieldLabel}" />
+            <TextBox Grid.Row="3" Grid.Column="1" x:Name="SR" />
+            <TextBox Grid.Row="3" Grid.Column="2" x:Name="SG" />
+            <TextBox Grid.Row="3" Grid.Column="3" x:Name="SB" />
+            <TextBox Grid.Row="3" Grid.Column="4" x:Name="Power" ToolTip="鏡面の強さ (power)" />
+            <TextBlock Grid.Row="4" Text="発光" Style="{StaticResource FieldLabel}" />
+            <TextBox Grid.Row="4" Grid.Column="1" x:Name="ER" />
+            <TextBox Grid.Row="4" Grid.Column="2" x:Name="EG" />
+            <TextBox Grid.Row="4" Grid.Column="3" x:Name="EB" />
+            <TextBlock Grid.Row="5" Text="テクスチャ" Style="{StaticResource FieldLabel}" />
+            <TextBox Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="4" x:Name="TexturePath" Width="220" HorizontalAlignment="Left"
+                     ToolTip=".x からの相対パス。書き換えて Enter で適用" />
+            <WrapPanel Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="4">
+                <Button Content="参照…" Click="OnBrowseTexture" />
+                <Button Content="編集して取り込み…" Click="OnBrowseTexture" Tag="Edit"
+                        ToolTip="画像を選んで、歪み補正・シームレス化・色調整・透過色などを編集してから使います（.x と同じフォルダーに「元の名前_edit.png」で保存）" />
+                <Button Content="外す" Click="OnClearTexture" />
+            </WrapPanel>
+        </Grid>
+
+        <DockPanel Margin="0,10,0,0" LastChildFill="False">
+            <TextBlock DockPanel.Dock="Left" Text="数値は Enter でも適用" Foreground="{StaticResource SubTextBrush}" VerticalAlignment="Center" />
+            <Button DockPanel.Dock="Right" Content="閉じる" Click="OnClose" IsCancel="True" MinWidth="64" />
+            <Button DockPanel.Dock="Right" x:Name="ApplyButton" Content="適用" Click="OnApply" FontWeight="SemiBold" MinWidth="64" />
+        </DockPanel>
+    </StackPanel>
+</Window>

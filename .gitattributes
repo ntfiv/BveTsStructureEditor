@@ -1,0 +1,8 @@
+# 改行コードはリポジトリの中では LF に揃え、Windows の作業フォルダーでは CRLF にする
+* text=auto
+
+# .x / .pmx のテストデータは中身をそのまま保つ（改行を変えると読み込みテストが変わる）
+*.x -text
+*.pmx -text
+*.dds binary
+*.png binary

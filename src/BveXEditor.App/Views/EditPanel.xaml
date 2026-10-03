@@ -1,0 +1,237 @@
+﻿<UserControl x:Class="BveXEditor.App.Views.EditPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:BveXEditor.App.Views">
+    <UserControl.Resources>
+        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Width" Value="56" />
+        </Style>
+        <!-- セクションの中の、さらに細かい設定の折りたたみ -->
+        <Style x:Key="SubSection" TargetType="Expander">
+            <Setter Property="Margin" Value="0,4,0,0" />
+            <Setter Property="IsExpanded" Value="False" />
+        </Style>
+    </UserControl.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel>
+
+            <!-- ───── 変形 ───── -->
+            <Expander x:Name="TransformSection" Header="変形（選択が空なら全体）" Style="{StaticResource Section}">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="44" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Column="1" Text="X" HorizontalAlignment="Center" Style="{StaticResource FieldLabel}" />
+                        <TextBlock Grid.Column="2" Text="Y" HorizontalAlignment="Center" Style="{StaticResource FieldLabel}" />
+                        <TextBlock Grid.Column="3" Text="Z" HorizontalAlignment="Center" Style="{StaticResource FieldLabel}" />
+                        <TextBlock Grid.Row="1" Text="移動 m" Style="{StaticResource FieldLabel}" />
+                        <TextBox Grid.Row="1" Grid.Column="1" x:Name="TX" Text="0" />
+                        <TextBox Grid.Row="1" Grid.Column="2" x:Name="TY" Text="0" />
+                        <TextBox Grid.Row="1" Grid.Column="3" x:Name="TZ" Text="0" />
+                        <TextBlock Grid.Row="2" Text="回転 °" Style="{StaticResource FieldLabel}" />
+                        <TextBox Grid.Row="2" Grid.Column="1" x:Name="RX" Text="0" />
+                        <TextBox Grid.Row="2" Grid.Column="2" x:Name="RY" Text="0" />
+                        <TextBox Grid.Row="2" Grid.Column="3" x:Name="RZ" Text="0" />
+                        <TextBlock Grid.Row="3" Text="拡大" Style="{StaticResource FieldLabel}" />
+                        <TextBox Grid.Row="3" Grid.Column="1" x:Name="SX" Text="1" />
+                        <TextBox Grid.Row="3" Grid.Column="2" x:Name="SY" Text="1" />
+                        <TextBox Grid.Row="3" Grid.Column="3" x:Name="SZ" Text="1" />
+                        <TextBlock Grid.Row="4" Text="中心" Style="{StaticResource FieldLabel}" />
+                        <ComboBox Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" x:Name="PivotBox" SelectedIndex="0">
+                            <ComboBoxItem Content="選択範囲の中心" />
+                            <ComboBoxItem Content="選択範囲の底面中心" />
+                            <ComboBoxItem Content="原点 (0,0,0)" />
+                        </ComboBox>
+                    </Grid>
+                    <WrapPanel>
+                        <Button Content="適用" Click="OnApplyTransform" FontWeight="SemiBold" />
+                        <Button Content="欄を戻す" Click="OnResetTransform" />
+                        <Button Content="X 反転" Click="OnMirrorX" ToolTip="中心を基準に左右反転（面の向きは保つ）" />
+                        <Button Content="Z 反転" Click="OnMirrorZ" ToolTip="中心を基準に前後反転（面の向きは保つ）" />
+                    </WrapPanel>
+                    <Expander x:Name="TransformMore" Header="その他" Style="{StaticResource SubSection}">
+                        <StackPanel>
+                            <WrapPanel>
+                                <Button Content="底面中心を原点へ" Click="OnAlignBottom" ToolTip="外接箱の底面中心が (0,0,0) に来るよう平行移動" />
+                                <Button Content="中心を原点へ" Click="OnAlignCenter" />
+                            </WrapPanel>
+                            <WrapPanel>
+                                <TextBlock Text="矢印キーの移動量" Style="{StaticResource FieldLabel}" />
+                                <TextBox x:Name="NudgeStep" Text="0.1" ToolTip="矢印キー・PgUp/PgDn での移動量。ギズモの Ctrl スナップや作図のグリッドにも使います" />
+                                <TextBlock Text="m" Style="{StaticResource FieldLabel}" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+            </Expander>
+
+            <!-- ───── 面・頂点（よく使うもの） ───── -->
+            <Expander x:Name="FaceSection" Header="面・頂点" Style="{StaticResource Section}">
+                <StackPanel>
+                    <WrapPanel>
+                        <Button Content="面を裏返す" Click="OnFlip" />
+                        <Button Content="面を張る" Click="OnCreateFace" ToolTip="頂点選択で 3 点以上を順番にクリックしてから" />
+                        <Button Content="両面化" Click="OnDoubleSide"
+                                ToolTip="選んだ面（選択なしなら全部）に裏向きの面を足して、両側から見えるようにします（BVE は裏面を描きません）" />
+                        <Button Content="削除" Click="OnDelete" />
+                    </WrapPanel>
+                    <WrapPanel>
+                        <TextBlock Text="押し出し" Style="{StaticResource FieldLabel}" Width="56" />
+                        <TextBox x:Name="ExtrudeDist" Text="1" />
+                        <TextBlock Text="m" Style="{StaticResource FieldLabel}" />
+                        <Button Content="押し出す" Click="OnExtrude" />
+                    </WrapPanel>
+                    <WrapPanel ToolTip="選んだ面の内側に一回り小さい面を作ります。続けて押し出すと窓や扉の凹みになります">
+                        <TextBlock Text="インセット" Style="{StaticResource FieldLabel}" Width="56" />
+                        <TextBox x:Name="InsetDist" Text="0.1" />
+                        <TextBlock Text="m" Style="{StaticResource FieldLabel}" />
+                        <Button Content="インセット" Click="OnInset" />
+                    </WrapPanel>
+                </StackPanel>
+            </Expander>
+
+            <!-- ───── 形の加工 ───── -->
+            <Expander x:Name="ShapeSection" Header="形の加工" Style="{StaticResource Section}" IsExpanded="False">
+                <StackPanel>
+                    <WrapPanel>
+                        <Button Content="三角形に分割" Click="OnTriangulate" />
+                        <Button Content="切り離す" Click="OnDetach" ToolTip="選んだ面の頂点を複製して、他の面から独立させる（UV の継ぎ目を作るとき）" />
+                    </WrapPanel>
+                    <WrapPanel ToolTip="選んだ四角形（選択なしなら全部）を格子に分けます。横は 1→2 番目の角の辺の方向">
+                        <TextBlock Text="分割" Style="{StaticResource FieldLabel}" Width="64" />
+                        <TextBox x:Name="SubdivU" Text="2" Width="36" />
+                        <TextBlock Text="×" Style="{StaticResource FieldLabel}" />
+                        <TextBox x:Name="SubdivV" Text="2" Width="36" />
+                        <Button Content="分割" Click="OnSubdivide" />
+                    </WrapPanel>
+                    <WrapPanel ToolTip="頂点選択で、切れ目と交わる辺の両端 2 頂点を選んでから。四角形の帯をぐるっとたどって切れ目を入れます">
+                        <TextBlock Text="ループカット" Style="{StaticResource FieldLabel}" Width="64" />
+                        <TextBox x:Name="LoopCuts" Text="1" Width="36" />
+                        <TextBlock Text="本" Style="{StaticResource FieldLabel}" />
+                        <Button Content="切れ目を入れる" Click="OnLoopCut" />
+                    </WrapPanel>
+                    <WrapPanel ToolTip="オブジェクト選択（または選択なし）: メッシュの全部の角 / 面選択: 選んだ面の辺 / 頂点選択: 両端を選んだ辺。指定した角度以上曲がっている辺だけが対象">
+                        <TextBlock Text="面取り" Style="{StaticResource FieldLabel}" Width="64" />
+                        <TextBox x:Name="ChamferDist" Text="0.1" />
+                        <TextBlock Text="m" Style="{StaticResource FieldLabel}" />
+                        <TextBox x:Name="ChamferAngle" Text="30" Width="40" />
+                        <TextBlock Text="° 以上" Style="{StaticResource FieldLabel}" />
+                        <Button Content="面取り" Click="OnChamfer" />
+                    </WrapPanel>
+                    <WrapPanel ToolTip="選んだメッシュ（選択なしなら全部）を X=0 で切り、残す側の鏡像で反対側を作り直します。中心線上の頂点は左右でつながります">
+                        <TextBlock Text="対称化" Style="{StaticResource FieldLabel}" Width="64" />
+                        <ComboBox x:Name="SymmetrizeSide" Width="130" SelectedIndex="0">
+                            <ComboBoxItem Content="+X 側（右）を残す" />
+                            <ComboBoxItem Content="-X 側（左）を残す" />
+                        </ComboBox>
+                        <Button Content="対称化" Click="OnSymmetrize" />
+                    </WrapPanel>
+                </StackPanel>
+            </Expander>
+
+            <!-- ───── 頂点・法線 ───── -->
+            <Expander x:Name="VertexSection" Header="頂点・法線" Style="{StaticResource Section}" IsExpanded="False">
+                <StackPanel>
+                    <WrapPanel ToolTip="この距離より近い頂点を 1 つにまとめます（選択なしならメッシュ全体）">
+                        <TextBlock Text="結合距離" Style="{StaticResource FieldLabel}" Width="64" />
+                        <TextBox x:Name="WeldDist" Text="0.001" />
+                        <CheckBox x:Name="WeldUV" Content="UV も同じものだけ" IsChecked="True" />
+                        <Button Content="頂点を結合" Click="OnWeld" />
+                    </WrapPanel>
+                    <WrapPanel ToolTip="この角度より緩く曲がる辺はなめらかに見せます。法線を持たないメッシュを保存するときにも使います">
+                        <TextBlock Text="スムーズ角" Style="{StaticResource FieldLabel}" Width="64" />
+                        <TextBox x:Name="SmoothAngle" Text="30" />
+                        <TextBlock Text="°" Style="{StaticResource FieldLabel}" />
+                        <Button Content="法線を作り直す" Click="OnNormals" />
+                    </WrapPanel>
+                </StackPanel>
+            </Expander>
+
+            <!-- ───── 配列複製 ───── -->
+            <Expander x:Name="ArraySection" Header="配列複製" Style="{StaticResource Section}" IsExpanded="False">
+                <StackPanel>
+                    <WrapPanel ToolTip="窓・柱・架線柱・柵などを一定間隔で並べます。個数は元を含めた数。選択が空なら全体">
+                        <TextBlock Text="直線" Style="{StaticResource FieldLabel}" Width="36" />
+                        <TextBox x:Name="ArrayCount" Text="5" Width="36" />
+                        <TextBlock Text="個 間隔 X/Y/Z" Style="{StaticResource FieldLabel}" />
+                        <TextBox x:Name="ArrayDX" Text="0" Width="42" />
+                        <TextBox x:Name="ArrayDY" Text="0" Width="42" />
+                        <TextBox x:Name="ArrayDZ" Text="5" Width="42" />
+                        <Button Content="並べる" Click="OnArrayLinear" />
+                    </WrapPanel>
+                    <WrapPanel ToolTip="縦軸 (Y) まわりに並べます。360° なら一周を等分、それ以外は最初と最後がその角度だけ離れます">
+                        <TextBlock Text="円周" Style="{StaticResource FieldLabel}" Width="36" />
+                        <TextBox x:Name="RadialCount" Text="8" Width="36" />
+                        <TextBlock Text="個" Style="{StaticResource FieldLabel}" />
+                        <TextBox x:Name="RadialAngle" Text="360" Width="42" />
+                        <TextBlock Text="° 中心 X/Z" Style="{StaticResource FieldLabel}" />
+                        <TextBox x:Name="RadialCX" Text="0" Width="42" />
+                        <TextBox x:Name="RadialCZ" Text="0" Width="42" />
+                        <Button Content="並べる" Click="OnArrayRadial" />
+                    </WrapPanel>
+                </StackPanel>
+            </Expander>
+
+            <!-- ───── メッシュ ───── -->
+            <Expander x:Name="MeshSection" Header="メッシュ" Style="{StaticResource Section}" IsExpanded="False">
+                <StackPanel>
+                    <WrapPanel>
+                        <TextBlock Text="名前" Style="{StaticResource FieldLabel}" />
+                        <TextBox x:Name="MeshName" Width="150" />
+                        <Button Content="変更" Click="OnRename" />
+                    </WrapPanel>
+                    <WrapPanel>
+                        <Button Content="複製" Click="OnDuplicate" />
+                        <Button Content="削除" Click="OnDeleteMesh" />
+                        <Button Content="結合" Click="OnMerge" ToolTip="オブジェクト選択で 2 つ以上のメッシュを選んでから" />
+                        <Button Content="選択面を別メッシュに" Click="OnSeparate" />
+                        <Button Content="マテリアルごとに分割" Click="OnSplitMaterial" />
+                    </WrapPanel>
+                </StackPanel>
+            </Expander>
+
+            <!-- ───── マテリアル ───── -->
+            <Expander x:Name="MaterialSection" Header="マテリアル（作業中のメッシュ）" Style="{StaticResource Section}">
+                <StackPanel>
+                    <ListBox x:Name="MaterialList" Height="110" SelectionChanged="OnMaterialSelected"
+                             ToolTip="ダブルクリックで色・テクスチャを編集">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                                <EventSetter Event="MouseDoubleClick" Handler="OnMaterialDoubleClick" />
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Border Width="16" Height="16" Background="{Binding Swatch}" BorderBrush="#888" BorderThickness="1" Margin="0,0,6,0" />
+                                    <TextBlock Text="{Binding Label}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <WrapPanel>
+                        <Button Content="選択面に割り当て" Click="OnAssignMaterial" FontWeight="SemiBold" />
+                        <Button Content="色・テクスチャ…" Click="OnEditMaterial"
+                                ToolTip="選んだマテリアルの色・テクスチャを別ウィンドウで編集します（一覧のダブルクリックでも）" />
+                        <Button Content="追加" Click="OnAddMaterial" />
+                        <Button Content="削除" Click="OnDeleteMaterial" />
+                    </WrapPanel>
+                    <Expander x:Name="MaterialMore" Header="整理" Style="{StaticResource SubSection}">
+                        <WrapPanel Margin="0,4,0,0">
+                            <Button Content="同じものをまとめる" Click="OnMergeMaterials" />
+                            <Button Content="使っていないものを削除" Click="OnRemoveUnusedMaterials" />
+                        </WrapPanel>
+                    </Expander>
+                </StackPanel>
+            </Expander>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

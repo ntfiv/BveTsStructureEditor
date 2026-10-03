@@ -1,0 +1,54 @@
+<UserControl x:Class="BveXEditor.App.Views.UvEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="clr-namespace:BveXEditor.App.Views">
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1" Padding="6,4">
+            <StackPanel>
+                <WrapPanel>
+                    <TextBlock Text="マテリアル" VerticalAlignment="Center" Margin="0,0,4,0" />
+                    <ComboBox x:Name="MaterialBox" Width="240" SelectionChanged="OnMaterialChanged" />
+                    <TextBlock x:Name="TextureInfo" VerticalAlignment="Center" Margin="10,0" Foreground="{DynamicResource SubTextBrush}" />
+                </WrapPanel>
+                <WrapPanel Margin="0,4,0,0">
+                    <Button Content="全体表示" Click="OnFit" />
+                    <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
+                    <Button Content="左右反転" Click="OnFlipU" />
+                    <Button Content="上下反転" Click="OnFlipV" />
+                    <Button Content="90° 回転" Click="OnRotate" />
+                    <Button Content="0〜1 に合わせる" Click="OnFitUnit" ToolTip="選んだ UV の外接矩形をテクスチャ全体に広げる" />
+                    <Button Content="切り離す" Click="OnDetach" ToolTip="選んだ面の頂点を複製して、他の面と UV を別々に動かせるようにする" />
+                    <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
+                    <TextBlock Text="U" VerticalAlignment="Center" Margin="2,0" />
+                    <TextBox x:Name="MoveU" Width="44" Text="0" />
+                    <TextBlock Text="V" VerticalAlignment="Center" Margin="4,0,2,0" />
+                    <TextBox x:Name="MoveV" Width="44" Text="0" />
+                    <TextBlock Text="倍率" VerticalAlignment="Center" Margin="4,0,2,0" />
+                    <TextBox x:Name="ScaleUV" Width="44" Text="1" />
+                    <Button Content="数値で変形" Click="OnNumeric" />
+                </WrapPanel>
+                <WrapPanel Margin="0,4,0,0">
+                    <TextBlock Text="投影" VerticalAlignment="Center" Margin="0,0,4,0" />
+                    <ComboBox x:Name="ProjectAxis" Width="130" SelectedIndex="0">
+                        <ComboBoxItem Content="自動（箱投影）" />
+                        <ComboBoxItem Content="面の向き" />
+                        <ComboBoxItem Content="正面 (Z)" />
+                        <ComboBoxItem Content="側面 (X)" />
+                        <ComboBoxItem Content="上面 (Y)" />
+                    </ComboBox>
+                    <ComboBox x:Name="ProjectFit" Width="120" SelectedIndex="2" Margin="4,0">
+                        <ComboBoxItem Content="引き伸ばす" />
+                        <ComboBoxItem Content="縦横比を保つ" />
+                        <ComboBoxItem Content="実寸" />
+                    </ComboBox>
+                    <TextBox x:Name="MetersPerRepeat" Width="44" Text="4" ToolTip="実寸のとき、テクスチャ 1 枚が何 m か" />
+                    <TextBlock Text="m / 枚" VerticalAlignment="Center" Margin="2,0,6,0" />
+                    <Button Content="選択面に投影" Click="OnProject" />
+                </WrapPanel>
+            </StackPanel>
+        </Border>
+        <TextBlock DockPanel.Dock="Bottom" Margin="8,3" Foreground="{DynamicResource SubTextBrush}" FontSize="11"
+                   Text="左クリック/ドラッグ: 選択（Shift 追加・Ctrl 反転） 選択を左ドラッグ: 移動（Shift で軸固定） 右/中ドラッグ: スクロール ホイール: ズーム" />
+        <v:UvCanvas x:Name="Canvas" />
+    </DockPanel>
+</UserControl>

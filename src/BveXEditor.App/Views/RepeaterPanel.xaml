@@ -1,0 +1,108 @@
+<UserControl x:Class="BveXEditor.App.Views.RepeaterPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Width" Value="56" />
+            <EventSetter Event="LostFocus" Handler="OnFieldCommitted" />
+            <EventSetter Event="KeyDown" Handler="OnFieldKeyDown" />
+        </Style>
+    </UserControl.Resources>
+    <DockPanel Margin="8,6">
+        <TextBlock DockPanel.Dock="Top" TextWrapping="Wrap" Foreground="{StaticResource SubTextBrush}" Margin="0,0,0,6"
+                   Text="長いストラクチャを進行方向 (Z) に切り分け、Repeater で繰り返す形にします。"
+                   ToolTip="BVE の Repeater は、ストラクチャをまっすぐのまま span ごとに置きます。&#x0a;25 m のまま置くと曲線でずれるので、5 m ずつに割って順に繰り返すと軌道に沿います。&#x0a;対象は選択のあるメッシュ（選択が空なら全体）です。" />
+
+        <!-- 分割 -->
+        <GroupBox DockPanel.Dock="Top" Header="分割" Padding="6,4">
+            <StackPanel>
+                <WrapPanel>
+                    <TextBlock Text="ピースの長さ" Style="{StaticResource FieldLabel}" Width="86" />
+                    <TextBox x:Name="PieceLength" Text="5" />
+                    <TextBlock Text="m" Style="{StaticResource FieldLabel}" />
+                    <Button Content="分割する" Click="OnSplit" FontWeight="SemiBold" Margin="8,0,0,0" />
+                </WrapPanel>
+                <WrapPanel>
+                    <CheckBox x:Name="AutoRange" Content="Z の範囲は自動" IsChecked="True" Checked="OnOptionChanged" Unchecked="OnOptionChanged"
+                              VerticalAlignment="Center" Margin="0,0,8,0"
+                              ToolTip="対象メッシュの前後の端から決めます。外すと開始・終了を自分で入れられます" />
+                    <TextBox x:Name="ZStart" Text="0" IsEnabled="False" />
+                    <TextBlock Text="〜" Style="{StaticResource FieldLabel}" />
+                    <TextBox x:Name="ZEnd" Text="25" IsEnabled="False" />
+                    <TextBlock Text="m" Style="{StaticResource FieldLabel}" />
+                </WrapPanel>
+                <WrapPanel ToolTip="曲線では継ぎ目の外側に隙間が出るので、ピースを少し長めに切り出して重ねます。&#x0a;繰り返しの間隔（span）は区間の長さのままです（5 m 間隔で 5.05 m のピース、など）">
+                    <TextBlock Text="重ね代" Style="{StaticResource FieldLabel}" Width="86" />
+                    <TextBox x:Name="Overlap" Text="0" />
+                    <TextBlock Text="m" Style="{StaticResource FieldLabel}" />
+                    <Button Content="半径から自動" Click="OnAutoOverlap" Margin="8,0,0,0"
+                            ToolTip="下のプレビューの半径・間隔・並べ方と、モデルの左右の張り出しから、隙間が出ない最小の重ね代を入れます" />
+                </WrapPanel>
+                <CheckBox x:Name="WrapAround" Content="伸ばした先は先頭から回り込む" IsChecked="True" Checked="OnOptionChanged" Unchecked="OnOptionChanged"
+                          ToolTip="Repeater は全体を繰り返すので、最後のピースの伸ばした先にはモデル先頭の形と UV が続きます。&#x0a;外すと、最後のピースだけ伸ばしません" />
+                <CheckBox x:Name="AlignZero" Content="各ピースを Z=0 起点に揃える" IsChecked="True" Checked="OnOptionChanged" Unchecked="OnOptionChanged"
+                          ToolTip="Repeater は繰り返し位置にストラクチャの原点を置くので、ふつうは ON のままにします" />
+                <CheckBox x:Name="DropEmpty" Content="面のない区間は飛ばす" IsChecked="True" Checked="OnOptionChanged" Unchecked="OnOptionChanged"
+                          ToolTip="空の区間はファイルを作りません。番号は元の区間のまま（飛び番）になります" />
+                <TextBlock x:Name="SplitInfo" TextWrapping="Wrap" Margin="0,4,0,0" />
+            </StackPanel>
+        </GroupBox>
+
+        <!-- 書き出し -->
+        <GroupBox DockPanel.Dock="Top" Header="書き出し（ピースごとに .x）" Padding="6,4" Margin="0,6,0,0">
+            <StackPanel>
+                <DockPanel Margin="0,0,0,2">
+                    <TextBlock Text="出力先" Style="{StaticResource FieldLabel}" Width="86" DockPanel.Dock="Left" />
+                    <Button DockPanel.Dock="Right" Content="参照…" Click="OnBrowseOutput" />
+                    <TextBox x:Name="OutputDir" Width="Auto" />
+                </DockPanel>
+                <WrapPanel>
+                    <TextBlock Text="ファイル名" Style="{StaticResource FieldLabel}" Width="86" />
+                    <TextBox x:Name="BaseName" Width="120" />
+                    <TextBlock Text="_00.x, _01.x …" Style="{StaticResource FieldLabel}" />
+                    <Button Content="書き出す" Click="OnExport" FontWeight="SemiBold" Margin="8,0,0,0" />
+                </WrapPanel>
+            </StackPanel>
+        </GroupBox>
+
+        <!-- プレビュー -->
+        <GroupBox DockPanel.Dock="Top" Header="曲線に並べてプレビュー" Padding="6,4" Margin="0,6,0,0">
+            <StackPanel>
+                <CheckBox x:Name="ShowPreview" Content="3D ビューに並べて表示" Checked="OnOptionChanged" Unchecked="OnOptionChanged"
+                          ToolTip="BVE と同じ置き方です。ピース自体は曲がらず、位置と向きだけ曲線に沿います。&#x0a;緩和曲線・勾配・横方向のオフセットは考えません" />
+                <WrapPanel>
+                    <TextBlock Text="曲線半径" Style="{StaticResource FieldLabel}" Width="86" />
+                    <TextBox x:Name="Radius" Text="200" ToolTip="正 = 右カーブ / 負 = 左カーブ / 0 = 直線" />
+                    <TextBlock Text="m（正=右）" Style="{StaticResource FieldLabel}" />
+                </WrapPanel>
+                <WrapPanel>
+                    <TextBlock Text="間隔 span" Style="{StaticResource FieldLabel}" Width="86" />
+                    <TextBox x:Name="Span" Text="5" ToolTip="Repeater の間隔。ふつうはピースの区間の長さと同じにします（重ね代は含めません）" />
+                    <TextBlock Text="m" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="本数" Style="{StaticResource FieldLabel}" Margin="8,0,0,0" />
+                    <TextBox x:Name="Count" Text="20" />
+                </WrapPanel>
+                <CheckBox x:Name="BlockMode" Content="25 m ブロック単位で向きを変える（BVE と同じ）" IsChecked="True"
+                          Checked="OnOptionChanged" Unchecked="OnOptionChanged"
+                          ToolTip="BVE は軌道を 25 m ごとの直線でつなぐので、同じブロックの中のストラクチャは同じ向きになり、&#x0a;ブロックの境目で折れます。外すと、曲線そのものに沿って 1 本ずつ向きを変えます" />
+                <TextBlock x:Name="PreviewInfo" TextWrapping="Wrap" Foreground="{StaticResource SubTextBrush}" Margin="0,4,0,0" />
+            </StackPanel>
+        </GroupBox>
+
+        <WrapPanel DockPanel.Dock="Top" Margin="0,6,0,0">
+            <Button Content="モデルに反映" Click="OnApplyToScene"
+                    ToolTip="編集中のモデルの対象メッシュを、切り分けたピース（別メッシュ）に置き換えます。&#x0a;元の位置のまま・重ね代なしで分けます（重ね代と Z=0 揃えは書き出し用）。元に戻せます" />
+        </WrapPanel>
+
+        <ListBox x:Name="Results" Margin="0,6,0,0" HorizontalContentAlignment="Stretch">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Left" Text="{Binding Mark}" Foreground="{Binding MarkBrush}" Width="16" />
+                        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+                    </DockPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</UserControl>

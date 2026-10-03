@@ -1,0 +1,849 @@
+<title>BVE X Editor 使い方ガイド</title>
+<meta name="description" content="BVE Trainsim 用の .x ストラクチャを作る・直すための BVE X Editor の使い方と機能の説明書">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=M+PLUS+1+Code:wght@400;600&display=swap">
+<style>
+  :root {
+    --ground: #F3F5F2;
+    --surface: #FFFFFF;
+    --ink: #1C2420;
+    --muted: #5A665F;
+    --rule: #D3DAD5;
+    --accent: #1D7555;
+    --accent-soft: #E1EFE8;
+    --amber: #A86E05;
+    --amber-soft: #F8EDD6;
+    --kbd-bg: #FFFFFF;
+    --kbd-edge: #B9C3BC;
+    --axis-x: #C9463D;
+    --axis-y: #2F8F4E;
+    --axis-z: #2F63C9;
+    --font-body: "BIZ UDPGothic", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+    --font-code: "M PLUS 1 Code", "Consolas", "MS Gothic", ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #121614;
+      --surface: #1A201D;
+      --ink: #E3E9E5;
+      --muted: #97A39C;
+      --rule: #2E3732;
+      --accent: #57C79A;
+      --accent-soft: #1C3229;
+      --amber: #E3AC45;
+      --amber-soft: #33291A;
+      --kbd-bg: #232A26;
+      --kbd-edge: #45504A;
+      --axis-x: #EE7A70;
+      --axis-y: #6BCB8A;
+      --axis-z: #7FA4F0;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #121614;
+    --surface: #1A201D;
+    --ink: #E3E9E5;
+    --muted: #97A39C;
+    --rule: #2E3732;
+    --accent: #57C79A;
+    --accent-soft: #1C3229;
+    --amber: #E3AC45;
+    --amber-soft: #33291A;
+    --kbd-bg: #232A26;
+    --kbd-edge: #45504A;
+    --axis-x: #EE7A70;
+    --axis-y: #6BCB8A;
+    --axis-z: #7FA4F0;
+  }
+
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 15.5px;
+    line-height: 1.85;
+    padding-inline: 20px;
+    padding-block: 0 64px;
+  }
+  a { color: var(--accent); text-underline-offset: 3px; }
+  a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+  .shell {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 230px minmax(0, 1fr);
+    gap: 48px;
+  }
+  @media (max-width: 860px) { .shell { grid-template-columns: minmax(0, 1fr); gap: 0; } }
+
+  /* ── 見出し ── */
+  header.masthead {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding-block: 44px 28px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 36px;
+    display: grid;
+    gap: 10px;
+  }
+  .eyebrow {
+    font-family: var(--font-code);
+    font-size: 12.5px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  h1 {
+    margin: 0;
+    font-size: clamp(28px, 4.4vw, 40px);
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+    text-wrap: balance;
+  }
+  .lede { margin: 0; max-width: 62ch; color: var(--muted); }
+  .axes {
+    display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 6px;
+    font-family: var(--font-code); font-size: 13px; color: var(--muted);
+  }
+  .axes span b { font-weight: 600; }
+  .axes .x b { color: var(--axis-x); } .axes .y b { color: var(--axis-y); } .axes .z b { color: var(--axis-z); }
+
+  /* ── 目次 ── */
+  nav.toc {
+    position: sticky;
+    top: calc(env(safe-area-inset-top, 0px) + 20px);
+    align-self: start;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+  nav.toc p { margin: 0 0 8px; font-weight: 700; font-size: 12.5px; letter-spacing: 0.06em; color: var(--muted); }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  nav.toc a {
+    display: block; padding: 4px 10px; border-radius: 6px;
+    color: var(--ink); text-decoration: none; border-left: 2px solid transparent;
+  }
+  nav.toc a:hover { background: var(--accent-soft); }
+  nav.toc .sub a { padding-left: 22px; color: var(--muted); font-size: 13px; }
+  @media (max-width: 860px) {
+    nav.toc { position: static; max-height: none; margin-bottom: 28px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; }
+    nav.toc ol { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    nav.toc .sub { display: none; }
+  }
+
+  /* ── 本文 ── */
+  main { min-width: 0; }
+  section { padding-block: 8px 30px; border-bottom: 1px solid var(--rule); margin-bottom: 30px; scroll-margin-top: 16px; }
+  section:last-of-type { border-bottom: 0; }
+  h2 {
+    font-size: 24px; line-height: 1.4; margin: 0 0 12px; text-wrap: balance;
+    display: flex; align-items: baseline; gap: 12px;
+  }
+  h2 .tag { font-family: var(--font-code); font-size: 12px; font-weight: 400; color: var(--muted); letter-spacing: 0.06em; }
+  h3 { font-size: 17.5px; margin: 26px 0 6px; line-height: 1.5; text-wrap: balance; }
+  h4 { font-size: 15.5px; margin: 18px 0 4px; }
+  p, ul, ol { max-width: 68ch; }
+  p { margin: 0 0 12px; }
+  ul, ol { margin: 0 0 14px; padding-left: 1.4em; }
+  li { margin-bottom: 4px; }
+  li::marker { color: var(--muted); }
+  strong { font-weight: 700; }
+
+  .path {
+    font-family: var(--font-code); font-size: 0.9em;
+    background: var(--accent-soft); color: var(--ink);
+    padding: 1px 6px; border-radius: 4px; white-space: nowrap;
+  }
+  code, .file {
+    font-family: var(--font-code); font-size: 0.88em;
+    padding: 1px 5px; border-radius: 4px; background: var(--surface); border: 1px solid var(--rule);
+    overflow-wrap: anywhere;
+  }
+  kbd {
+    font-family: var(--font-code); font-size: 0.84em;
+    padding: 1px 7px; border-radius: 5px;
+    background: var(--kbd-bg); border: 1px solid var(--kbd-edge); border-bottom-width: 2px;
+    white-space: nowrap;
+  }
+
+  .note, .caution {
+    max-width: 68ch; margin: 14px 0 18px; padding: 12px 16px;
+    border-radius: 8px; font-size: 14.5px; line-height: 1.75;
+  }
+  .note { background: var(--accent-soft); }
+  .caution { background: var(--amber-soft); }
+  .note b.label, .caution b.label { display: block; font-size: 12.5px; letter-spacing: 0.06em; margin-bottom: 2px; }
+  .note b.label { color: var(--accent); }
+  .caution b.label { color: var(--amber); }
+  .note p:last-child, .caution p:last-child { margin: 0; }
+
+  /* 手順（順番に意味があるものだけ番号付き） */
+  ol.steps { list-style: none; padding: 0; counter-reset: step; display: grid; gap: 10px; }
+  ol.steps > li {
+    counter-increment: step; position: relative; padding-left: 42px; margin: 0;
+  }
+  ol.steps > li::before {
+    content: counter(step);
+    position: absolute; left: 0; top: 2px;
+    width: 28px; height: 28px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-family: var(--font-code); font-size: 13px; font-weight: 600;
+    color: var(--accent); border: 1.5px solid var(--accent);
+  }
+
+  /* 画面の見取り図 */
+  .screen {
+    max-width: 760px; margin: 16px 0 20px;
+    border: 1px solid var(--rule); border-radius: 10px; overflow: hidden;
+    background: var(--surface); font-size: 12.5px; line-height: 1.45;
+  }
+  .screen .bar { padding: 6px 12px; border-bottom: 1px solid var(--rule); color: var(--muted); font-family: var(--font-code); }
+  .screen .bar b { color: var(--ink); font-weight: 600; }
+  .screen .body { display: grid; grid-template-columns: 0.9fr 2.2fr 1.3fr; min-height: 220px; }
+  .screen .pane { padding: 10px 12px; border-right: 1px solid var(--rule); display: grid; align-content: start; gap: 6px; }
+  .screen .pane:last-child { border-right: 0; }
+  .screen .pane.view { background: color-mix(in srgb, var(--ink) 86%, var(--accent)); color: var(--ground); }
+  .screen .pane.view .hint { color: color-mix(in srgb, var(--ground) 70%, transparent); }
+  .screen .name { font-weight: 700; }
+  .screen .hint { color: var(--muted); }
+  .screen .foot { padding: 5px 12px; border-top: 1px solid var(--rule); color: var(--muted); font-family: var(--font-code); }
+  @media (max-width: 560px) {
+    .screen .body { grid-template-columns: 1fr; }
+    .screen .pane { border-right: 0; border-bottom: 1px solid var(--rule); }
+  }
+
+  /* 表 */
+  .table-wrap { overflow-x: auto; margin: 10px 0 18px; max-width: 100%; }
+  table { border-collapse: collapse; min-width: 480px; width: 100%; max-width: 760px; font-size: 14.5px; line-height: 1.65; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 12px; border-bottom: 1px solid var(--rule); }
+  th { font-size: 12.5px; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; }
+  td:first-child { white-space: nowrap; }
+
+  details { max-width: 68ch; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); margin-bottom: 8px; }
+  details summary { cursor: pointer; padding: 10px 14px; font-weight: 700; }
+  details > div { padding: 0 14px 12px; }
+  details > div p:last-child { margin-bottom: 0; }
+
+  .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px 28px; max-width: 820px; }
+  .two > div h4 { margin-top: 6px; }
+
+  footer { max-width: 1120px; margin: 24px auto 0; color: var(--muted); font-size: 13px; border-top: 1px solid var(--rule); padding-top: 16px; }
+</style>
+
+<header class="masthead">
+  <div class="eyebrow">BVE X EDITOR ／ 利用者向け説明書</div>
+  <h1>BVE X Editor 使い方ガイド</h1>
+  <p class="lede">BVE Trainsim のストラクチャ（建物・看板・駅設備・車両など）を、DirectX の <code>.x</code> ファイルとして作ったり直したりする Windows 用のアプリです。この説明書では、画面の見方から形の作り方、BVE 向けの機能、保存と書き出しまでを順に説明します。</p>
+  <div class="axes" aria-label="座標の向き">
+    <span class="x"><b>X</b> 右</span>
+    <span class="y"><b>Y</b> 上</span>
+    <span class="z"><b>Z</b> 進行方向（画面の奥）</span>
+    <span>単位 m ／ 原点 = 軌道中心・レール面</span>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="toc" aria-label="目次">
+    <p>目次</p>
+    <ol>
+      <li><a href="#start">はじめに</a></li>
+      <li><a href="#screen">画面の見方</a></li>
+      <li><a href="#tutorial">はじめての 1 つ</a></li>
+      <li><a href="#files">開く・保存・書き出し</a></li>
+      <li class="sub"><a href="#bvex">作業ファイル (.bvex)</a></li>
+      <li><a href="#view">視点と表示</a></li>
+      <li><a href="#select">選択とギズモ</a></li>
+      <li><a href="#create">形を追加する</a></li>
+      <li class="sub"><a href="#draw">描いて作る（断面・建物・回転体）</a></li>
+      <li><a href="#edit">形を編集する</a></li>
+      <li class="sub"><a href="#mirror">左右対称</a></li>
+      <li><a href="#material">マテリアルと UV</a></li>
+      <li class="sub"><a href="#texedit">テクスチャの編集</a></li>
+      <li><a href="#reference">下絵と地理院地図</a></li>
+      <li class="sub"><a href="#refobj">参考オブジェクト</a></li>
+      <li><a href="#bve">BVE メニュー</a></li>
+      <li class="sub"><a href="#repeater">Repeater 用に分割</a></li>
+      <li><a href="#measure">計測・寸法・スナップ</a></li>
+      <li><a href="#keys">キー操作一覧</a></li>
+      <li><a href="#faq">困ったとき</a></li>
+      <li><a href="#appendix">付録</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <!-- ───────── はじめに ───────── -->
+    <section id="start">
+      <h2>はじめに</h2>
+      <p>BVE X Editor では、次のようなことができます。</p>
+      <ul>
+        <li>既存の <code>.x</code>（テキスト・バイナリ・圧縮のどれでも）を開いて手直しし、テキスト形式で保存する</li>
+        <li>箱・板・円柱・パイプなどを組み合わせたり、図面や地図をなぞったりして、新しくストラクチャを作る</li>
+        <li>テクスチャを貼り、UV を整え、写真から歪みを取ったテクスチャ画像を作る</li>
+        <li>線路や建築限界の目安を見ながら位置を合わせ、BVE で問題になりやすい点をチェックする</li>
+        <li>PMX（MMD のモデル）を形とマテリアルだけ読み書きする</li>
+      </ul>
+
+      <h3>起動と終了</h3>
+      <p><span class="file">BveXEditor.App.exe</span> を起動します。<code>.x</code> / <code>.pmx</code> / <code>.bvex</code> をウィンドウにドラッグ＆ドロップするか、exe にファイルを渡しても開けます。画像ファイルを渡すと、新しいファイルにその画像の板を作ります。</p>
+      <p>保存していない変更があるときは、閉じる前に保存するか確認します。</p>
+
+      <div class="note"><b class="label">覚えておくと楽なこと</b>
+        <p>ほとんどの操作は <kbd>Ctrl</kbd>+<kbd>Z</kbd> で元に戻せます（100 回まで）。形を大きく変える操作も、気軽に試してから戻してください。</p>
+      </div>
+    </section>
+
+    <!-- ───────── 画面の見方 ───────── -->
+    <section id="screen">
+      <h2>画面の見方</h2>
+      <div class="screen" role="img" aria-label="画面の配置の見取り図">
+        <div class="bar"><b>メニュー</b>　ファイル ／ 編集 ／ 表示 ／ BVE　　<b>ツールバー</b>　選択の種類・ギズモ・左右対称・ワイヤー・平行投影・寸法・計測・視点</div>
+        <div class="body">
+          <div class="pane">
+            <span class="name">メッシュ一覧</span>
+            <span class="hint">チェックで表示 ON/OFF。クリックで作業中のメッシュを切り替え</span>
+            <span class="name">マテリアル</span>
+            <span class="hint">作業中メッシュのマテリアルごとの表示 ON/OFF。ダブルクリックでその面を選択</span>
+          </div>
+          <div class="pane view">
+            <span class="name">3D ビュー ／ UV エディタ</span>
+            <span class="hint">モデルを見て、選んで、ギズモで動かす。裏向きの面は赤く表示</span>
+            <span class="hint">左下の文字にマウスを乗せると操作一覧</span>
+          </div>
+          <div class="pane">
+            <span class="name">右のタブ</span>
+            <span class="hint">編集 ／ 形を追加 ／ 下絵 ／ テキスト (.x)</span>
+            <span class="hint">使う機能ごとに折りたたみ。開閉は次回も覚えている</span>
+          </div>
+        </div>
+        <div class="foot">ステータスバー: 操作の結果・次にすること ／ メッシュ・頂点・面・選択の数</div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>右のタブ</th><th>使うとき</th></tr></thead>
+          <tbody>
+            <tr><td>編集</td><td>選んだものを動かす・面を増やす・加工する、メッシュとマテリアルの編集</td></tr>
+            <tr><td>形を追加</td><td>箱・板・円柱・パイプ・L 字、断面・建物・回転体を描いて作る、画像から板</td></tr>
+            <tr><td>下絵</td><td>図面・写真・地理院地図を敷く、参考オブジェクトを並べる</td></tr>
+            <tr><td>テキスト (.x)</td><td><code>.x</code> の中身を直接書き換える（<kbd>Ctrl</kbd>+<kbd>Enter</kbd> で 3D に反映、<kbd>Ctrl</kbd>+<kbd>F</kbd> で検索）</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>説明が長い機能は、ボタンや入力欄にマウスを乗せると詳しい説明（ツールチップ）が出ます。</p>
+    </section>
+
+    <!-- ───────── チュートリアル ───────── -->
+    <section id="tutorial">
+      <h2>はじめての 1 つ <span class="tag">小さな詰所を作って BVE 用に書き出す</span></h2>
+      <p>箱に窓の凹みを付け、テクスチャを貼って <code>.x</code> に書き出すまでの流れです。</p>
+      <ol class="steps">
+        <li>メニューの <span class="path">ファイル › 新規</span> で空のファイルにします。</li>
+        <li>右の <span class="path">形を追加</span> タブで、箱の幅 4・高さ 3・奥行 4 m のまま <strong>箱を追加</strong> を押します。水色の枠は置く前のプレビューです。</li>
+        <li>ツールバーで <strong>面 (E)</strong> を選び、3D ビューで箱の手前の面をクリックします。</li>
+        <li><span class="path">編集 › 面・頂点</span> の <strong>インセット</strong> に 0.8 m を入れて押すと、内側に一回り小さい面ができます。続けて <strong>押し出し</strong> に <code>-0.2</code> を入れて押すと、窓の凹みになります。</li>
+        <li>右の <span class="path">編集 › マテリアル</span> の一覧でマテリアルをダブルクリックし、開いたウィンドウの <strong>参照…</strong> から壁の画像を選びます。UV がずれていたら中央の <strong>UV エディタ</strong> タブで整えます。</li>
+        <li><span class="path">BVE › 互換チェック…</span> を開き、エラーや注意が出ていないか見ます。</li>
+        <li><span class="path">ファイル › 作業ファイルとして保存…</span> で <code>.bvex</code> に保存しておくと、次回もこの状態から続けられます。</li>
+        <li><span class="path">ファイル › 書き出し</span>（<kbd>Ctrl</kbd>+<kbd>E</kbd>）で <code>.x</code> を出力します。BVE のマップからはこの <code>.x</code> を読み込みます。</li>
+      </ol>
+      <div class="note"><b class="label">ヒント</b>
+        <p>BVE は面の裏側を描きません。3D ビューで赤く見える面は、BVE では見えない向きです。<span class="path">編集 › 面・頂点 › 面を裏返す</span> で直すか、看板や柵のように両側から見せたいときは <strong>両面化</strong> を使います。</p>
+      </div>
+    </section>
+
+    <!-- ───────── ファイル ───────── -->
+    <section id="files">
+      <h2>開く・保存・書き出し</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>メニュー（ファイル）</th><th>すること</th></tr></thead>
+          <tbody>
+            <tr><td>開く <kbd>Ctrl</kbd>+<kbd>O</kbd></td><td><code>.bvex</code> / <code>.x</code> / <code>.pmx</code> を開く。バイナリ・圧縮の <code>.x</code> も読める</td></tr>
+            <tr><td>今のファイルに追加で読み込み <kbd>Ctrl</kbd>+<kbd>I</kbd></td><td>別のファイルのメッシュを今のファイルに足す。テクスチャのパスは今のファイル基準に直す</td></tr>
+            <tr><td>保存 <kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>開いている形式のまま上書き（<code>.x</code> はテキスト形式で書く）</td></tr>
+            <tr><td>名前を付けて保存 <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd></td><td><code>.x</code> / <code>.pmx</code> / <code>.bvex</code> を選んで保存</td></tr>
+            <tr><td>作業ファイルとして保存…</td><td>作業中の状態ごと <code>.bvex</code> に保存（次の節）</td></tr>
+            <tr><td>書き出し <kbd>Ctrl</kbd>+<kbd>E</kbd></td><td>開いているファイルはそのままで、BVE で使う <code>.x</code> / <code>.pmx</code> を出力</td></tr>
+            <tr><td>前回の場所に書き出す <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>E</kbd></td><td>同じ場所の <code>.x</code> を更新</td></tr>
+            <tr><td>テクスチャ画像の編集…</td><td>画像を歪み補正などして PNG で保存するだけ（<a href="#texedit">テクスチャの編集</a>）</td></tr>
+            <tr><td>保存設定…</td><td>文字コード（Shift_JIS / UTF-8）、小数点以下の桁数、PMX の単位</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>ファイルがすでに開いているところへモデルをドロップすると、<strong>今のファイルに追加</strong> するか <strong>新しいファイルとして開く</strong> かを選べます。3D ビューの地面に落としたときは、落とした地点に置くこともできます。</p>
+      <div class="caution"><b class="label">注意</b>
+        <p>バイナリや圧縮の <code>.x</code> を上書き保存すると、テキスト形式に変わります（確認が出ます）。ボーンやモーフのある PMX を上書きすると、形とマテリアルだけになります。</p>
+      </div>
+
+      <h3 id="bvex">作業ファイル (.bvex)</h3>
+      <p>作業の途中を丸ごと残しておくための、このアプリ専用の形式です。<code>.x</code> に書き出すと失われる情報もそのまま保存します。</p>
+      <div class="two">
+        <div>
+          <h4>保存されるもの</h4>
+          <ul>
+            <li>モデル（数値の丸めや法線の作り直しをしない。頂点カラー・読み込んだ法線も）</li>
+            <li>下絵と参考オブジェクトの置き方、線路・限界のガイド</li>
+            <li>カメラの位置と平行投影、表示の設定、隠したメッシュやマテリアル</li>
+            <li>選択の種類と選択中の要素、ギズモ、左右対称モード、開いているタブ</li>
+            <li>保存設定と、最後に書き出した場所</li>
+          </ul>
+        </div>
+        <div>
+          <h4>保存されないもの</h4>
+          <ul>
+            <li>テクスチャや下絵の画像そのもの（作業ファイルからの相対パスだけを持つ）</li>
+            <li>元に戻す・やり直しの履歴</li>
+          </ul>
+          <p>作業ファイルを別の PC に持っていくときは、画像も同じフォルダー構成でコピーしてください。</p>
+        </div>
+      </div>
+      <p>おすすめの使い方は、ふだんは <code>.bvex</code> で保存し、BVE で確かめるときに <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>E</kbd> で同じ場所の <code>.x</code> を更新する流れです。</p>
+    </section>
+
+    <!-- ───────── 視点と表示 ───────── -->
+    <section id="view">
+      <h2>視点と表示</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>操作</th><th>動き</th></tr></thead>
+          <tbody>
+            <tr><td>右ドラッグ</td><td>視点を回す（標準の方式。下の「視点の操作」で変えられます）</td></tr>
+            <tr><td>中ドラッグ</td><td>視点を平行移動（同上）</td></tr>
+            <tr><td>ホイール</td><td>ズーム（マウスの位置を中心に）</td></tr>
+            <tr><td><kbd>F</kbd> ／ 全体表示</td><td>モデル全体が入るように</td></tr>
+            <tr><td><kbd>1</kbd> <kbd>3</kbd> <kbd>7</kbd> <kbd>5</kbd></td><td>正面（運転台から） ／ 右側面 ／ 上面 ／ 斜め。<kbd>Ctrl</kbd>+<kbd>1</kbd>・<kbd>Ctrl</kbd>+<kbd>3</kbd> で反対側</td></tr>
+            <tr><td><kbd>O</kbd> ／ 平行投影</td><td>遠近感なしの表示。正面・側面・上面で寸法を合わせるときに</td></tr>
+            <tr><td>右下のビューキューブ</td><td>面や角をクリックでその向きへ</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><span class="path">表示</span> メニューで、テクスチャ・ワイヤーフレーム（<kbd>W</kbd>）・裏面を赤で表示・グリッド（1 m）を切り替えられます。原点 (0,0,0) には小さな白い点が出ます。</p>
+
+      <h3 id="navigation">視点の操作を変える</h3>
+      <p>ほかのソフトに慣れている場合は、<span class="path">表示 › 視点の操作</span> でマウスの割り当てを選べます。左ボタンはどの方式でも選択とギズモに使います。選んだ方式は次に起動したときも使われ、左下の操作説明も方式に合わせて変わります。</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>方式</th><th>回転</th><th>移動</th><th>ドラッグでズーム</th></tr></thead>
+          <tbody>
+            <tr><td>標準（メタセコイア風）</td><td>右ドラッグ</td><td>中ドラッグ ／ <kbd>Shift</kbd>+右</td><td><kbd>Ctrl</kbd>+右</td></tr>
+            <tr><td>Blender 風</td><td>中ドラッグ</td><td><kbd>Shift</kbd>+中</td><td><kbd>Ctrl</kbd>+中</td></tr>
+            <tr><td>SketchUp 風</td><td>中ドラッグ</td><td><kbd>Shift</kbd>+中</td><td>—</td></tr>
+            <tr><td>Fusion 風</td><td><kbd>Shift</kbd>+中</td><td>中ドラッグ</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li>ホイールでのズームはどの方式でも使えます。<strong>ホイールのズーム方向を反転</strong> で、奥に回したときの向きを入れ替えられます</li>
+        <li><strong>マウスの位置を中心に回転・ズーム</strong> をオフにすると、画面の中心を軸に回転・ズームします</li>
+      </ul>
+    </section>
+
+    <!-- ───────── 選択 ───────── -->
+    <section id="select">
+      <h2>選択とギズモ</h2>
+      <h3>選ぶ</h3>
+      <ul>
+        <li><strong>オブジェクト (Q)</strong>：メッシュ単位 ／ <strong>面 (E)</strong>：面単位 ／ <strong>頂点 (R)</strong>：頂点単位</li>
+        <li>クリックで選択、何もない所から始めるドラッグで範囲選択。<kbd>Shift</kbd> で追加、<kbd>Ctrl</kbd> で反転</li>
+        <li><kbd>Ctrl</kbd>+<kbd>A</kbd> ですべて、<kbd>Esc</kbd> で選択解除</li>
+        <li>選択が空のまま変形などをすると、多くの操作は全体が対象になります（パネルの見出しに書いてあります）</li>
+      </ul>
+
+      <h3>動かす（ギズモ）</h3>
+      <p>選ぶと 3D ビューにギズモが出ます。ツールバーまたはキーで種類を切り替えます（同じキーをもう一度押すと隠れます）。</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ギズモ</th><th>つかむ場所</th></tr></thead>
+          <tbody>
+            <tr><td>移動 <kbd>G</kbd></td><td>軸の矢印＝その方向だけ ／ 軸の間の四角＝その平面内 ／ 中心の箱＝画面と平行</td></tr>
+            <tr><td>回転 <kbd>T</kbd></td><td>X・Y・Z のリング</td></tr>
+            <tr><td>拡大 <kbd>S</kbd></td><td>先端が立方体の軸＝1 方向 ／ 軸の間の帯＝2 方向 ／ 中心の箱を左右にドラッグ＝全体</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li><kbd>Ctrl</kbd> を押しながらドラッグでスナップ（移動は「矢印キーの移動量」刻み、回転 15°、拡大 0.1 倍）</li>
+        <li>移動中に <kbd>Shift</kbd> で近くの頂点に吸着（<a href="#measure">計測とスナップ</a>）</li>
+        <li>ドラッグ中に <kbd>Esc</kbd> で取り消し</li>
+        <li>矢印キー・<kbd>PgUp</kbd>・<kbd>PgDn</kbd> で少しずつ移動（<kbd>Shift</kbd> で 10 倍）。量は <span class="path">編集 › 変形 › その他</span> で設定</li>
+      </ul>
+      <p>数値で動かしたいときは <span class="path">編集 › 変形</span> に移動・回転・拡大を入れて <strong>適用</strong> します。中心は「選択範囲の中心」「底面中心」「原点」から選べます。</p>
+    </section>
+
+    <!-- ───────── 形を追加 ───────── -->
+    <section id="create">
+      <h2>形を追加する</h2>
+      <p>右の <span class="path">形を追加</span> タブから追加します。どれも <strong>底面が Y=0、X・Z は原点中心</strong> に置かれ、追加したメッシュが選択された状態になります。</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>形</th><th>設定</th></tr></thead>
+          <tbody>
+            <tr><td>箱</td><td>幅 (X)・高さ (Y)・奥行 (Z)</td></tr>
+            <tr><td>板</td><td>幅・高さ、立てる（手前 −Z 向き）か寝かせる（上向き）</td></tr>
+            <tr><td>円柱</td><td>半径・高さ・分割数</td></tr>
+            <tr><td>パイプ</td><td>円柱の「パイプ（中空）」にチェックして厚さを指定</td></tr>
+            <tr><td>L 字</td><td>円柱の形を「L字」に。高さまで立ち上がり、横の長さだけ +Z／−Z／+X／−X へ伸びる。曲げ半径 0 で角ばった継ぎ目、正の値で円弧に曲げる。パイプとも組み合わせられる</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="draw">描いて作る（断面・建物・回転体）</h3>
+      <p>ボタンを押すと描く面の向き・平行投影に切り替わり、3D ビューで角を順にクリックして形を描けます。下絵を敷いておけば、図面や地図をなぞって作れます。</p>
+      <div class="two">
+        <div>
+          <h4>描いて押し出す</h4>
+          <p><strong>描く面</strong>で向きを選びます。へこんだ形でも両端の蓋は正しく作られます。</p>
+          <ul>
+            <li><strong>正面図</strong>: 車体・ホーム・擁壁などの断面を描き、進行方向 (+Z) に奥行きぶん押し出す</li>
+            <li><strong>上面図</strong>: 地理院地図などの下絵で建物の角をなぞり、上 (+Y) に高さぶん押し出す</li>
+          </ul>
+        </div>
+        <div>
+          <h4>輪郭を描いて回転体に</h4>
+          <p>タンク・柱・碍子などの輪郭の右半分を描くと、縦軸 (Y) まわりに回します。分割数と角度（360° 未満なら扇形）を指定できます。</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>描いている間の操作</th><th>動き</th></tr></thead>
+          <tbody>
+            <tr><td>クリック</td><td>点を置く</td></tr>
+            <tr><td><kbd>Enter</kbd> ／ ダブルクリック</td><td>確定して形を作る</td></tr>
+            <tr><td><kbd>Backspace</kbd></td><td>最後の点を消す</td></tr>
+            <tr><td><kbd>Ctrl</kbd></td><td>グリッド（矢印キーの移動量）に合わせる</td></tr>
+            <tr><td><kbd>Shift</kbd></td><td>近くの頂点に吸着</td></tr>
+            <tr><td><kbd>Esc</kbd></td><td>取り消し</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>画像から板</h3>
+      <p>画像ファイル（PNG・BMP・JPG・GIF・DDS）を 3D ビューにドロップすると、その画像を貼った板を作ります。大きさ（高さ・幅・1px あたりの長さ）と向きは <span class="path">形を追加 › 画像から板</span> で決めます。「取り込む前に編集する」にチェックすると、板にする前に <a href="#texedit">テクスチャの編集</a> ができます。</p>
+    </section>
+
+    <!-- ───────── 編集 ───────── -->
+    <section id="edit">
+      <h2>形を編集する</h2>
+      <p>右の <span class="path">編集</span> タブにまとまっています。よく使う「変形」「面・頂点」「マテリアル」以外は折りたたんであるので、見出しをクリックして開きます。</p>
+
+      <h3>面・頂点</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ボタン</th><th>すること</th></tr></thead>
+          <tbody>
+            <tr><td>面を裏返す</td><td>選んだ面の表裏を入れ替える（赤い面を直す）</td></tr>
+            <tr><td>面を張る</td><td>頂点選択で 3 点以上を順番にクリックしてから押すと、その順で面を作る</td></tr>
+            <tr><td>両面化</td><td>裏向きの面を足して両側から見えるようにする。看板・柵・フェンス向き</td></tr>
+            <tr><td>削除</td><td>選んだ面・頂点・メッシュを消す（<kbd>Delete</kbd> でも）</td></tr>
+            <tr><td>押し出し</td><td>選んだ面を法線方向に押し出して側面を張る。マイナスで凹ませる</td></tr>
+            <tr><td>インセット</td><td>選んだ面の内側に一回り小さい面を作る（選択は内側の面になる）</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>形の加工</h3>
+      <ul>
+        <li><strong>三角形に分割</strong>・<strong>切り離す</strong>（UV の継ぎ目を作るとき）</li>
+        <li><strong>分割</strong>：四角形を縦横のマス目に分ける</li>
+        <li><strong>ループカット</strong>：頂点選択で「切れ目と交わる辺」の両端 2 頂点を選び、四角形の帯をぐるっと一周切る。建物の階や車体の窓の段を作るときに</li>
+        <li><strong>面取り</strong>：角を大きさ m で落とす。「○° 以上曲がった角だけ」を指定できる。オブジェクト選択なら全部の角、面選択なら選んだ面の辺、頂点選択なら両端を選んだ辺</li>
+        <li><strong>対称化</strong>：X=0 で切って、右（+X）か左（−X）を残し、その鏡像で反対側を作り直す</li>
+      </ul>
+
+      <h3>頂点・法線</h3>
+      <ul>
+        <li><strong>頂点を結合</strong>：指定した距離より近い頂点を 1 つにまとめる（UV が違うものは分けたままにもできる）</li>
+        <li><strong>法線を作り直す</strong>：スムーズ角より緩い角はなめらかに見せる。法線のないメッシュを保存するときもこの角度を使う</li>
+      </ul>
+
+      <h3>配列複製</h3>
+      <p><strong>直線</strong>は個数と間隔（X/Y/Z）で並べ、<strong>円周</strong>は個数・角度・中心で縦軸まわりに並べます。個数は元を含めた数です。窓・柱・架線柱・柵などに使います。</p>
+
+      <h3>メッシュ</h3>
+      <p>名前の変更、複製、削除、複数メッシュの結合、選択面を別メッシュに、マテリアルごとに分割ができます。</p>
+
+      <h3 id="mirror">左右対称</h3>
+      <p>ツールバーの <strong>左右対称 (M)</strong> を ON にすると、選択を動かしたとき X=0 をはさんだ反対側の頂点も鏡像で動きます。連動する頂点には紫の印、中心線には紫の線が出ます。</p>
+      <ul>
+        <li>ギズモ・変形欄・矢印キーのどれで動かしても効きます</li>
+        <li>片側だけを動かしたとき、中心線上の頂点は中心から離れません</li>
+        <li>反対側に対応する頂点がない場合は、その頂点だけが動きます</li>
+      </ul>
+    </section>
+
+    <!-- ───────── マテリアル ───────── -->
+    <section id="material">
+      <h2>マテリアルと UV</h2>
+      <h3>マテリアル</h3>
+      <p><span class="path">編集 › マテリアル</span> で、作業中メッシュのマテリアルを一覧します。面を選んで <strong>選択面に割り当て</strong>、<strong>追加</strong>・<strong>削除</strong> ができます。一覧のマテリアルを<strong>ダブルクリック</strong>（または <strong>色・テクスチャ…</strong>）すると、色・テクスチャを編集するウィンドウが開きます。テクスチャの見本と大きさも表示されます。ウィンドウは開いたまま作業でき、一覧で別のマテリアルを選ぶと対象が切り替わります。数値は <kbd>Enter</kbd> か <strong>適用</strong> で反映します。</p>
+      <ul>
+        <li>拡散色（RGBA。A は不透明度）、色コード（<code>#RRGGBB</code> を入れて <kbd>Enter</kbd>）、鏡面・強さ、発光</li>
+        <li><strong>パレット…</strong>（または色見本をクリック）で色を選べます。四角い欄で鮮やかさと明るさ、右の縦長の帯で色相をドラッグするほか、基本の色（コンクリート・レンガ・バラスト・信号の赤など）、このメッシュで使っている色、最近使った色からも選べます。<strong>決定</strong> でそのままマテリアルに反映し（元に戻せます）、キャンセルや外側のクリックでは元の色に戻ります</li>
+        <li>テクスチャは <strong>参照…</strong> で選ぶと <code>.x</code> からの相対パスで入ります。<strong>編集して取り込み…</strong> なら取り込む前に編集できます</li>
+        <li><span class="path">編集 › マテリアル › 整理</span> の <strong>同じものをまとめる</strong>・<strong>使っていないものを削除</strong> で整理</li>
+      </ul>
+      <p>左下のマテリアル一覧のチェックを外すと、そのマテリアルの面を 3D ビューで隠せます（隠した面は選択もされません）。</p>
+
+      <h3>UV エディタ</h3>
+      <p>中央の <span class="path">UV エディタ</span> タブで、テクスチャの上に UV を表示します。UV をドラッグで動かす、左右・上下反転、90° 回転、0〜1 に合わせる、数値での変形ができます。<strong>平面投影</strong> は、面の向きや正面・側面・上面から UV を貼り直す機能で、実寸（1 m あたり何回繰り返すか）でも指定できます。</p>
+
+      <h3 id="texedit">テクスチャの編集</h3>
+      <p>写真などをテクスチャにする前に、簡単に整えられます。開く場所は 3 つです。</p>
+      <ul>
+        <li><span class="path">形を追加 › 画像から板</span> の「取り込む前に編集する」（ドロップにも効く）</li>
+        <li>マテリアルの色・テクスチャのウィンドウの <strong>編集して取り込み…</strong></li>
+        <li><span class="path">ファイル › テクスチャ画像の編集…</span>（保存するだけ）</li>
+      </ul>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>項目</th><th>できること</th></tr></thead>
+          <tbody>
+            <tr><td>歪み補正・切り抜き</td><td>左の画像の四隅の丸をドラッグし、斜めに写った壁や看板の四隅に合わせると、正面から見た長方形に直す。実寸の幅・高さを入れると縦横比をそれに合わせる</td></tr>
+            <tr><td>回転・反転</td><td>90° 単位の回転、左右・上下反転</td></tr>
+            <tr><td>シームレス化</td><td>横・縦につないでも継ぎ目が出ないようにする。「2×2 に並べて表示」で確認</td></tr>
+            <tr><td>色調整</td><td>明るさ・コントラスト・彩度</td></tr>
+            <tr><td>透過色</td><td>スポイトで拾った色に近い部分を透明にする（許容差・ぼかし）</td></tr>
+            <tr><td>出力の大きさ</td><td>自動なら縦横比に近い 2 の累乗（長辺 512 / 1024 / 2048）</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>編集した画像を使う</strong> を押すと、<code>.x</code> と同じフォルダーに「元の名前_edit.png」で保存します（元の画像は残ります）。板にしたときは、画像を 2 の累乗に伸ばしても見た目どおりの縦横比になります。</p>
+      <div class="note"><b class="label">ヒント</b>
+        <p>斜めから撮った写真は奥が縮んで写るので、四隅だけで決めた縦横比は実物とずれます。建物の幅と高さがわかっていれば「実寸」に入れてください。</p>
+      </div>
+    </section>
+
+    <!-- ───────── 下絵 ───────── -->
+    <section id="reference">
+      <h2>下絵と地理院地図</h2>
+      <p>図面や写真を 3D ビューに敷いて、なぞって作るための機能です。下絵はモデルには含まれず、<code>.x</code> にも書き出されません。</p>
+      <ol class="steps">
+        <li><span class="path">下絵</span> タブで <strong>画像を追加…</strong>（タブを開いている間は画像のドロップも下絵になります）。</li>
+        <li>置く面を選びます：上面図（地面に敷く）／ 正面図 ／ 側面図。</li>
+        <li><strong>2 点で縮尺を合わせる</strong> を押し、寸法のわかる 2 点（線路の中心線の間、柱と柱など）をクリックして実際の距離を入れます。</li>
+        <li><strong>1 点目を原点へ</strong> で、基準にしたい点を原点に合わせます。必要なら回転（±90°）と不透明度を調整します。</li>
+      </ol>
+
+      <h3>地理院地図から追加</h3>
+      <p>国土地理院の地理院タイル（標準地図・淡色地図・写真）を取得して、実寸の上面図の下絵にします。インターネット接続が必要です。</p>
+      <ul>
+        <li>地点は緯度経度（例 <code>35.681236, 139.767125</code>）、地理院地図や Google マップのアドレス、度分秒のどれでも貼り付けられます</li>
+        <li>範囲は一辺 250〜4000 m、ズームは自動で決まります</li>
+        <li>指定した地点が原点、北が +Z になります。線路の向きに合わせるには「回転」を変えます</li>
+      </ul>
+      <div class="caution"><b class="label">出典の表示</b>
+        <p>地理院タイルを使った画面や画像を公開するときは「出典: 国土地理院」の表示が必要です（地理院タイル利用規約）。</p>
+      </div>
+
+      <h3 id="refobj">参考オブジェクト</h3>
+      <p>既存のストラクチャや車両のモデルを半透明で並べて、大きさや位置を見比べるための機能です。<span class="path">下絵 › 参考オブジェクト</span> を開いて <strong>モデルを追加…</strong> から <code>.x</code> / <code>.pmx</code> / <code>.bvex</code> を選びます。下絵タブを開いている間は、モデルファイルをドロップしても参考オブジェクトになります。</p>
+      <ul>
+        <li><strong>編集はできません。</strong>クリックや範囲選択でも選ばれず、編集の操作の対象にもなりません</li>
+        <li>位置 X/Y/Z を数値で入れるか、<strong>地面をクリックして置く</strong> で動かします。<strong>原点に戻す</strong> で元の位置へ</li>
+        <li>回転 X/Y/Z を度で入れて回します（モデルの原点まわり。向きは編集タブの変形欄と同じ）。縦軸まわりは <strong>Y −90°</strong> / <strong>Y +90°</strong> ボタンでも回せ、<strong>回転を戻す</strong> で 0° に</li>
+        <li>不透明度は 5〜100% で変えられます。一覧のチェックで表示 ON/OFF</li>
+        <li>元のファイルを外で書き換えたときは <strong>読み直す</strong></li>
+      </ul>
+      <div class="note"><b class="label">保存のされ方</b>
+        <p>参考オブジェクトは作業ファイル (<code>.bvex</code>) に保存されます（モデルそのものではなくファイルの場所・位置・回転・不透明度）。<code>.x</code> / <code>.pmx</code> への保存や書き出しには含まれません。</p>
+      </div>
+
+      <h3>なぞって建物を作る</h3>
+      <p><span class="path">形を追加 › 描いて作る</span> で描く面を <strong>上面図</strong> にし、高さを入れて <strong>描いて押し出す</strong> を押します（<a href="#draw">描いて作る</a>）。地図の建物の角を順にクリックして <kbd>Enter</kbd> で確定すると、その形を高さぶん押し出した建物を追加します。</p>
+    </section>
+
+    <!-- ───────── BVE メニュー ───────── -->
+    <section id="bve">
+      <h2>BVE メニュー</h2>
+
+      <h3>線路・限界のガイド（目安）</h3>
+      <p>在来線 1067 mm ／ 在来線 1435 mm ／ 新幹線 から選ぶと、3D ビューにレール（白）、車両限界（橙）、建築限界（水色）、ホーム端・高さ（緑）の目安を表示します。原点は <strong>軌道中心・レール面</strong> です。駅設備や沿線の構造物の位置合わせに使います。</p>
+      <div class="caution"><b class="label">注意</b>
+        <p>限界の形は代表的な寸法を単純化した目安です。規程の正確な形ではありません。</p>
+      </div>
+
+      <h3>互換チェック…</h3>
+      <p>BVE で読み込んだときに問題になりやすい点を、別ウィンドウに一覧します。開いたまま編集でき、編集すると自動で調べ直します。</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>重さ</th><th>主な項目</th></tr></thead>
+          <tbody>
+            <tr><td>エラー</td><td>テクスチャが見つからない</td></tr>
+            <tr><td>注意</td><td>テクスチャが絶対パス・日本語などの文字・4096px 超、面積 0 の面、同じ位置に重なった面（ちらつきの原因）、へこんだ多角形</td></tr>
+            <tr><td>情報</td><td>2 の累乗でないテクスチャ、平らでない多角形、未使用の頂点・マテリアル、面の多いメッシュ、読み込み時の警告</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>項目を選んで <strong>選択</strong> で該当箇所を選び、「直せる」と出ているものは <strong>直す</strong> で自動修正できます（元に戻せます）。</p>
+
+      <h3 id="repeater">Repeater 用に分割…</h3>
+      <p>Repeater は、ストラクチャを <strong>span ごとに、まっすぐのまま</strong> 繰り返し置きます。25 m の長さで作ったものをそのまま置くと曲線で軌道から外れるので、5 m ずつに割って 5 つのストラクチャを順に繰り返すと、曲線にもよく沿います。その「割る → 書き出す → 並べて確かめる」を 1 つの窓でできます。</p>
+      <p>対象は<strong>選択のあるメッシュ（選択が空なら全体）</strong>です。窓は開いたままモデルを編集でき、編集すると割り直します。</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>欄</th><th>すること</th></tr></thead>
+          <tbody>
+            <tr><td>ピースの長さ</td><td>進行方向 (Z) に切る間隔。切り目をまたぐ面は切って、UV も補間します。切り目にぴったり乗った面は、向いている側のピースに入れます（両方に入れるとちらつくため）</td></tr>
+            <tr><td>Z の範囲</td><td>ふだんは自動（対象の前後の端）。自分で入れることもできます。割り切れないときは、端数が最後のピースに残ります</td></tr>
+            <tr><td>重ね代</td><td>区間の終わりから先に伸ばす長さ。曲線では継ぎ目の外側に隙間が出るので、5 m 間隔のピースを 5.05 m のように少し長く切り出して重ねます。繰り返しの間隔（span）は 5 m のままです。<strong>半径から自動</strong> を押すと、下のプレビューの半径・間隔・並べ方と、モデルの左右の張り出しから、隙間が出ない最小の値を入れます</td></tr>
+            <tr><td>伸ばした先は先頭から回り込む</td><td>Repeater は全体を繰り返すので、最後のピースの伸ばした先にはモデル先頭（0〜0.X m）の形と UV が続きます。面や頂点が増えるだけで、見た目は次の繰り返しの続きになります。外すと最後のピースだけ伸ばしません</td></tr>
+            <tr><td>各ピースを Z=0 起点に揃える</td><td>Repeater は繰り返し位置にストラクチャの原点を置くので、ふつうは ON のまま</td></tr>
+            <tr><td>面のない区間は飛ばす</td><td>空の区間はファイルを作りません。番号は元の区間のまま（飛び番）になります</td></tr>
+            <tr><td>書き出し</td><td>出力先フォルダーとファイル名を決めて、<code>名前_00.x</code>、<code>名前_01.x</code> … と 1 ピース 1 ファイルで書き出します。テクスチャの相対パスは出力先から同じ画像を指すよう直します</td></tr>
+            <tr><td>曲線に並べてプレビュー</td><td>半径（正 = 右カーブ／負 = 左カーブ／0 = 直線）・間隔 span・本数を入れると、BVE と同じ置き方で 3D ビューに並べます。ピース自体は曲がらず、位置と向きだけが変わります</td></tr>
+            <tr><td>25 m ブロック単位で向きを変える</td><td>BVE は軌道を 25 m ごとの直線でつないでいるので、同じブロックの中のストラクチャは<strong>同じ向き</strong>になり、ブロックの境目でまとめて折れます。既定は ON（BVE と同じ）。外すと曲線そのものに沿って 1 本ずつ向きが変わります</td></tr>
+            <tr><td>モデルに反映</td><td>編集中のモデルの対象メッシュを、切り分けたピース（別メッシュ）に置き換えます。元の位置のままで、元に戻せます</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note"><b class="label">プレビューについて</b>
+        <p>並べて表示するのは見るだけで、モデルには入りません（窓を閉じると消えます）。緩和曲線・カント・勾配・横方向のオフセットは考えません。継ぎ目の隙間が気になるときは、<strong>重ね代</strong>を増やす（「半径から自動」で、その半径に必要な最小値が入ります）か、ピースを短くします。</p>
+      </div>
+
+      <h3>文字から看板を作る…</h3>
+      <p>駅名標・案内板などの文字を画像にして、テクスチャ付きの板を追加します。文字（複数行・縦書き可）、フォント、太字、文字色、背景色（透明も可）、余白、配置、板の高さか幅を指定します。画像は <code>.x</code> と同じフォルダーに <code>sign_〜.png</code> で保存されます。<strong>裏からも読める両面</strong> にすると、裏面にも左右反転せずに文字が出ます。</p>
+
+      <h3>一括変換…</h3>
+      <p>フォルダー内の <code>.x</code> / <code>.pmx</code> をまとめて処理します。</p>
+      <ul>
+        <li>処理：拡大縮小、左右・前後反転、テクスチャパスの文字列置換、フォルダー以下の絶対パスを相対パスに、未使用の頂点・マテリアルの削除</li>
+        <li>出力：テキスト形式の <code>.x</code> か PMX。元の場所に書く（上書きは <code>.bak</code> を残す）か、構成を保って別フォルダーへ</li>
+        <li>読めなかったファイルは理由付きで一覧に出ます</li>
+      </ul>
+    </section>
+
+    <!-- ───────── 計測 ───────── -->
+    <section id="measure">
+      <h2>計測・寸法・スナップ</h2>
+      <div class="two">
+        <div>
+          <h4>計測</h4>
+          <p>ツールバーの <strong>計測</strong> を押し、3D ビューで 2 点をクリックすると、距離と ΔX / ΔY / ΔZ・水平距離を表示します。頂点の近くでは頂点に吸着します。次にビューをクリックするか <kbd>Esc</kbd> で消えます。</p>
+        </div>
+        <div>
+          <h4>頂点スナップ</h4>
+          <p>ギズモで移動中に <kbd>Shift</kbd> を押すと、マウスの近くの頂点に、選択の中で一番近い頂点をぴったり重ねます。吸着先は黄色い丸で示します。軸の矢印なら軸方向だけ、平面の四角なら平面内だけを合わせます。</p>
+        </div>
+      </div>
+
+      <h3 id="dimensions">寸法の表示</h3>
+      <p>ツールバーの <strong>寸法 (D)</strong>（または <span class="path">表示 › 寸法</span>、<kbd>D</kbd>）を ON にすると、3D ビューに長さ (m) を表示します。何の長さが出るかは選択によって変わります。</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>選択</th><th>出る寸法</th></tr></thead>
+          <tbody>
+            <tr><td>面</td><td>選んだ面の辺の長さ</td></tr>
+            <tr><td>頂点</td><td>両端とも選んだ辺の長さ。辺でつながっていない 2 頂点だけを選ぶと、その間の距離（黄色の破線）</td></tr>
+            <tr><td>オブジェクト ／ なし</td><td>選んだメッシュ（なしならモデル全体）の外形。幅 X（赤）・高さ Y（緑）・奥行 Z（青）</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li>視点を動かしても、ギズモで動かしている最中も数字が追従します</li>
+        <li>画面上で短すぎる辺や、長い辺の数字と重なる数字は省きます。ズームすると出てきます</li>
+        <li>辺が 400 本を超える選択では、辺の代わりに外形の寸法を出します</li>
+      </ul>
+    </section>
+
+    <!-- ───────── キー ───────── -->
+    <section id="keys">
+      <h2>キー操作一覧</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>キー</th><th>動作</th></tr></thead>
+          <tbody>
+            <tr><td><kbd>Q</kbd> <kbd>E</kbd> <kbd>R</kbd></td><td>オブジェクト ／ 面 ／ 頂点 選択</td></tr>
+            <tr><td><kbd>G</kbd> <kbd>T</kbd> <kbd>S</kbd></td><td>移動 ／ 回転 ／ 拡大ギズモ（もう一度で隠す）</td></tr>
+            <tr><td><kbd>M</kbd></td><td>左右対称モード</td></tr>
+            <tr><td><kbd>W</kbd></td><td>ワイヤーフレーム</td></tr>
+            <tr><td><kbd>O</kbd></td><td>平行投影 ／ 透視投影</td></tr>
+            <tr><td><kbd>D</kbd></td><td>寸法の表示</td></tr>
+            <tr><td><kbd>F</kbd></td><td>全体表示</td></tr>
+            <tr><td><kbd>1</kbd> <kbd>3</kbd> <kbd>7</kbd> <kbd>5</kbd></td><td>正面 ／ 右側面 ／ 上面 ／ 斜め（<kbd>Ctrl</kbd>+<kbd>1</kbd>・<kbd>Ctrl</kbd>+<kbd>3</kbd> で反対側）</td></tr>
+            <tr><td>矢印 ／ <kbd>PgUp</kbd> <kbd>PgDn</kbd></td><td>選択を水平 ／ 上下に移動（<kbd>Shift</kbd> で 10 倍）</td></tr>
+            <tr><td><kbd>Delete</kbd> ／ <kbd>Esc</kbd> ／ <kbd>Ctrl</kbd>+<kbd>A</kbd></td><td>削除 ／ 選択解除 ／ すべて選択</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> ／ <kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>元に戻す ／ やり直し</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>N</kbd> <kbd>Ctrl</kbd>+<kbd>O</kbd> <kbd>Ctrl</kbd>+<kbd>I</kbd></td><td>新規 ／ 開く ／ 追加で読み込み</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd> ／ <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd></td><td>保存 ／ 名前を付けて保存</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>E</kbd> ／ <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>E</kbd></td><td>書き出し ／ 前回の場所に書き出す</td></tr>
+            <tr><td><kbd>Ctrl</kbd>（ギズモ操作中）</td><td>スナップ</td></tr>
+            <tr><td><kbd>Shift</kbd>（ギズモで移動中）</td><td>頂点に吸着</td></tr>
+            <tr><td><kbd>Enter</kbd> <kbd>Backspace</kbd> <kbd>Esc</kbd>（点を置いている間）</td><td>確定 ／ 1 点戻す ／ 取り消し</td></tr>
+            <tr><td>右ドラッグ ／ 中ドラッグ ／ ホイール</td><td>視点の回転 ／ 移動 ／ ズーム（<a href="#navigation">表示 › 視点の操作</a> で変えられます）</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ───────── FAQ ───────── -->
+    <section id="faq">
+      <h2>困ったとき</h2>
+      <details>
+        <summary>3D ビューで面が赤く見える</summary>
+        <div><p>面が裏向き（BVE では見えない向き）になっています。面を選んで <span class="path">編集 › 面・頂点 › 面を裏返す</span>。両側から見せたい板なら <strong>両面化</strong> を使います。</p></div>
+      </details>
+      <details>
+        <summary>テクスチャが表示されない</summary>
+        <div><p><span class="path">BVE › 互換チェック…</span> で「テクスチャが見つかりません」が出ていないか確認してください。テクスチャは <code>.x</code> からの相対パスで探します。未保存のファイルで画像を選ぶと一時的に絶対パスになり、保存時に保存先フォルダー以下なら相対パスへ直ります。画像を外部で編集したときは <span class="path">表示 › テクスチャを読み直す</span>。</p></div>
+      </details>
+      <details>
+        <summary>BVE で見るとちらつく・形が崩れる</summary>
+        <div><p>互換チェックの「同じ位置・同じ向きに重なった面」（ちらつき）や「へこんだ多角形」「平らでない多角形」（BVE では三角形の分け方で崩れる）を確認してください。重なった面は「直す」で削除、平らでない多角形は「直す」で三角形に分割できます。</p></div>
+      </details>
+      <details>
+        <summary>選べない・クリックしても反応しない</summary>
+        <div><p>左のメッシュ一覧やマテリアル一覧でチェックを外したものは、表示されず選択もできません。点を置く操作（計測・作図・縮尺合わせ）の途中なら、<kbd>Esc</kbd> で抜けてから選んでください。</p></div>
+      </details>
+      <details>
+        <summary>.x で保存したら下絵やカメラが消えた</summary>
+        <div><p><code>.x</code> には形とマテリアルしか入りません（下絵は <code>.x</code> のパスごとに別の場所へ覚えています）。作業の状態をまるごと残したいときは <a href="#bvex">作業ファイル (.bvex)</a> で保存し、BVE 用には書き出しを使ってください。</p></div>
+      </details>
+      <details>
+        <summary>PMX を開いたら大きさが合わない</summary>
+        <div><p><span class="path">ファイル › 保存設定…</span> の「PMX 1 単位 =」を変えて開き直します。MMD のモデルでよく使われる目安は 0.08 m です。</p></div>
+      </details>
+    </section>
+
+    <!-- ───────── 付録 ───────── -->
+    <section id="appendix">
+      <h2>付録</h2>
+      <h3>座標と面の向き</h3>
+      <ul>
+        <li>座標は <code>.x</code> の値そのまま（BVE の空間）：X 右、Y 上、Z 進行方向、単位 m、左手系</li>
+        <li>面は表から見て時計回りに頂点が並びます</li>
+        <li>PMX も同じ向きのまま読み書きします（形・法線・UV・マテリアルのみ。ボーンやモーフは読み飛ばして警告に出します）</li>
+      </ul>
+
+      <h3>アプリが使う保存場所</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>場所</th><th>中身</th></tr></thead>
+          <tbody>
+            <tr><td><span class="file">%AppData%\BveXEditor\references.json</span></td><td><code>.x</code> ごとの下絵の置き方</td></tr>
+            <tr><td><span class="file">%AppData%\BveXEditor\reference_objects.json</span></td><td><code>.x</code> ごとの参考オブジェクトの置き方</td></tr>
+            <tr><td><span class="file">%AppData%\BveXEditor\ui.json</span></td><td>折りたたみの開閉</td></tr>
+            <tr><td><span class="file">%AppData%\BveXEditor\navigation.json</span></td><td>視点の操作の方式と設定</td></tr>
+            <tr><td><span class="file">%AppData%\BveXEditor\recent_colors.json</span></td><td>パレットの最近使った色</td></tr>
+            <tr><td><span class="file">%AppData%\BveXEditor\recent.txt</span></td><td>最近のファイル</td></tr>
+            <tr><td><span class="file">%LocalAppData%\BveXEditor\gsi</span></td><td>取得した地理院地図の画像</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>できないこと</h3>
+      <ul>
+        <li><code>.x</code> のバイナリ形式での保存（テキスト形式で保存します）</li>
+        <li>アニメーション・スキンメッシュ（読み飛ばして警告に出します）</li>
+        <li>作業ファイルへの画像の同梱、元に戻す履歴の保存</li>
+      </ul>
+    </section>
+
+  </main>
+</div>
+
+<footer>BVE X Editor 使い方ガイド ／ 地理院タイルの出典: 国土地理院</footer>

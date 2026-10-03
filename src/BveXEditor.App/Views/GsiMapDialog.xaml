@@ -1,0 +1,42 @@
+<Window x:Class="BveXEditor.App.Views.GsiMapDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="地理院地図を下絵にする" Width="520" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{StaticResource PanelBrush}">
+    <StackPanel Margin="16,14">
+        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource SubTextBrush}" Margin="0,0,0,10"
+                   Text="指定した地点を原点 (0,0,0)、北を +Z（進行方向）として、実寸で地面に敷きます。線路の向きに合わせるには、追加後に「回転」を変えてください。" />
+
+        <TextBlock Text="中心の地点" FontWeight="SemiBold" />
+        <TextBox x:Name="PlaceBox" Margin="0,2,0,0" TextChanged="OnInputChanged" />
+        <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource SubTextBrush}" Margin="0,2,0,8"
+                   Text="緯度経度（例: 35.681236, 139.767125）、地理院地図や Google マップのアドレス、度分秒を貼り付けられます。地理院地図で右クリックして表示される緯度経度が便利です。" />
+
+        <WrapPanel>
+            <TextBlock Text="種類" Style="{StaticResource FieldLabel}" Width="40" />
+            <ComboBox x:Name="LayerBox" Width="170" SelectionChanged="OnInputChanged" />
+            <TextBlock Text="範囲（一辺）" Style="{StaticResource FieldLabel}" Margin="12,0,4,0" />
+            <ComboBox x:Name="SizeBox" Width="90" SelectionChanged="OnInputChanged">
+                <ComboBoxItem Content="250 m" Tag="250" />
+                <ComboBoxItem Content="500 m" Tag="500" />
+                <ComboBoxItem Content="1000 m" Tag="1000" IsSelected="True" />
+                <ComboBoxItem Content="2000 m" Tag="2000" />
+                <ComboBoxItem Content="4000 m" Tag="4000" />
+            </ComboBox>
+        </WrapPanel>
+
+        <TextBlock x:Name="PlanInfo" TextWrapping="Wrap" Margin="0,8,0,0" />
+        <TextBlock x:Name="Progress" TextWrapping="Wrap" Margin="0,4,0,0" Foreground="{StaticResource SubTextBrush}" />
+        <TextBlock x:Name="ErrorText" TextWrapping="Wrap" Margin="0,4,0,0" Foreground="#C03030" Visibility="Collapsed" />
+
+        <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource SubTextBrush}" Margin="0,10,0,0">
+            地理院タイルを使った画面や画像を公開するときは「出典: 国土地理院」の表示が必要です（地理院タイル利用規約）。
+        </TextBlock>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button x:Name="FetchButton" Content="取得して下絵に追加" IsDefault="True" MinWidth="140" FontWeight="SemiBold" Click="OnFetch" />
+            <Button x:Name="CancelButton" Content="キャンセル" MinWidth="80" Click="OnCancel" />
+        </StackPanel>
+    </StackPanel>
+</Window>
