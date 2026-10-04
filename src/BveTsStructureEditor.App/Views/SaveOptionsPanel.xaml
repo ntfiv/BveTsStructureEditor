@@ -1,0 +1,39 @@
+﻿<UserControl x:Class="BveTsStructureEditor.App.Views.SaveOptionsPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="8,6">
+            <GroupBox Header="書き出し" Padding="6,4" Margin="0,0,0,6">
+                <StackPanel>
+                    <WrapPanel>
+                        <TextBlock Text="文字コード" Style="{StaticResource FieldLabel}" Width="90" />
+                        <ComboBox x:Name="EncodingBox" Width="120" SelectionChanged="OnSaveOptionChanged">
+                            <ComboBoxItem Content="Shift_JIS" />
+                            <ComboBoxItem Content="UTF-8" />
+                        </ComboBox>
+                    </WrapPanel>
+                    <WrapPanel>
+                        <TextBlock Text="小数点以下の桁" Style="{StaticResource FieldLabel}" Width="90" />
+                        <TextBox x:Name="PrecisionBox" Text="6" Width="48" LostFocus="OnSaveOptionChanged" />
+                        <TextBlock Text="（1〜9）" Style="{StaticResource FieldLabel}" />
+                    </WrapPanel>
+                    <CheckBox x:Name="TemplatesBox" Content="template 宣言を先頭に書く（古いローダー向け）" Click="OnSaveOptionChanged" />
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="PMX" Padding="6,4" Margin="0,0,0,6">
+                <StackPanel>
+                    <WrapPanel>
+                        <TextBlock Text="1 単位 =" Style="{StaticResource FieldLabel}" Width="90" />
+                        <TextBox x:Name="PmxScaleBox" Text="1" Width="64" LostFocus="OnSaveOptionChanged"
+                                 ToolTip="PMX を開くときに掛け、PMX で保存するときに割ります（MMD の目安は 0.08）。開き直すと反映されます。PMX で保存するのは形とマテリアルだけの静的モデルです" />
+                        <TextBlock Text="m" Style="{StaticResource FieldLabel}" />
+                    </WrapPanel>
+                </StackPanel>
+            </GroupBox>
+
+            <TextBlock TextWrapping="Wrap" Foreground="{StaticResource SubTextBrush}"
+                       Text=".x はテキスト形式で保存します（PMX は「名前を付けて保存」で種類を選ぶ）。テクスチャ名に日本語があるときは Shift_JIS が無難です。" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

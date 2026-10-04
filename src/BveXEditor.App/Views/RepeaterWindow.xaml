@@ -1,9 +1,0 @@
-<Window x:Class="BveXEditor.App.Views.RepeaterWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:v="clr-namespace:BveXEditor.App.Views"
-        Title="Repeater 用に分割" Width="420" Height="620" MinWidth="340" MinHeight="380"
-        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
-        Background="{StaticResource PanelBrush}">
-    <v:RepeaterPanel x:Name="Panel" />
-</Window>

@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\BveTsStructureEditor.Core\BveTsStructureEditor.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
+    <PackageReference Include="HelixToolkit.Wpf" Version="3.1.2" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <!-- 配布する exe の名前は BveTsStructureEditor.exe。名前空間はプロジェクト名のまま -->
+    <AssemblyName>BveTsStructureEditor</AssemblyName>
+    <RootNamespace>BveTsStructureEditor.App</RootNamespace>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <!-- 配布時のバージョン。リリースごとにここを上げる -->
+  <PropertyGroup>
+    <Version>0.1.0</Version>
+    <Product>BveTs Structure Editor</Product>
+    <Authors>ntfiv</Authors>
+    <Copyright>© 2026 ntfiv</Copyright>
+    <Description>BVE Trainsim 用ストラクチャ (.x) の作成・編集ツール</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="app.ico" />
+  </ItemGroup>
+
+  <!-- 説明書と配布用の文書を exe と同じフォルダーに置く（ヘルプメニューから開く） -->
+  <ItemGroup>
+    <Content Include="..\..\docs\manual.html" Link="manual.html" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\dist\*.txt" LinkBase="." CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

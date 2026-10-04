@@ -1,0 +1,90 @@
+<UserControl x:Class="BveTsStructureEditor.App.Views.ReferencePanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:BveTsStructureEditor.App.Views">
+    <UserControl.Resources>
+        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Width" Value="64" />
+            <EventSetter Event="LostFocus" Handler="OnFieldCommitted" />
+            <EventSetter Event="KeyDown" Handler="OnFieldKeyDown" />
+        </Style>
+    </UserControl.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="8,6">
+            <TextBlock TextWrapping="Wrap" Foreground="{StaticResource SubTextBrush}" Margin="0,0,0,6"
+                       Text="なぞって作るための下絵（.x には保存されません）。"
+                       ToolTip="図面や写真を 3D ビューに敷きます。モデルには含まれず、選択にも引っかかりません。&#x0a;このタブを開いている間は、画像をドロップすると下絵として追加されます。" />
+
+            <DockPanel Margin="0,0,0,4">
+                <Button DockPanel.Dock="Right" Content="削除" Click="OnRemove" />
+                <Button DockPanel.Dock="Right" Content="地理院地図から追加…" Click="OnAddGsi" />
+                <Button DockPanel.Dock="Right" Content="画像を追加…" Click="OnAdd" FontWeight="SemiBold" />
+                <TextBlock Text="下絵" FontWeight="SemiBold" VerticalAlignment="Center" />
+            </DockPanel>
+            <ListBox x:Name="List" Height="120" SelectionChanged="OnSelected" HorizontalContentAlignment="Stretch">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel>
+                            <CheckBox DockPanel.Dock="Left" IsChecked="{Binding Visible, Mode=OneWay}" Tag="{Binding}"
+                                      Click="OnVisibleClick" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock DockPanel.Dock="Right" Text="{Binding PlaneLabel}" Foreground="#777" FontSize="11" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                        </DockPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <TextBlock x:Name="AttributionText" Margin="0,3,0,0" FontSize="11" Foreground="{StaticResource SubTextBrush}" Visibility="Collapsed" />
+
+            <GroupBox x:Name="Editor" Header="選んだ下絵" Padding="6,4" Margin="0,8,0,0" IsEnabled="False">
+                <StackPanel>
+                    <WrapPanel>
+                        <TextBlock Text="置く面" Style="{StaticResource FieldLabel}" Width="64" />
+                        <ComboBox x:Name="PlaneBox" Width="170" SelectionChanged="OnPlaneChanged">
+                            <ComboBoxItem Content="上面図（地面に敷く）" />
+                            <ComboBoxItem Content="正面図（手前向きに立てる）" />
+                            <ComboBoxItem Content="側面図（右向きに立てる）" />
+                        </ComboBox>
+                    </WrapPanel>
+                    <WrapPanel>
+                        <TextBlock Text="幅" Style="{StaticResource FieldLabel}" Width="64" />
+                        <TextBox x:Name="WidthBox" />
+                        <TextBlock Text="m" Style="{StaticResource FieldLabel}" />
+                        <TextBlock x:Name="HeightInfo" Style="{StaticResource FieldLabel}" Margin="8,0,0,0" />
+                    </WrapPanel>
+                    <WrapPanel>
+                        <TextBlock Text="中心 X/Y/Z" Style="{StaticResource FieldLabel}" Width="64" />
+                        <TextBox x:Name="CxBox" />
+                        <TextBox x:Name="CyBox" />
+                        <TextBox x:Name="CzBox" />
+                    </WrapPanel>
+                    <WrapPanel>
+                        <TextBlock Text="回転" Style="{StaticResource FieldLabel}" Width="64" />
+                        <TextBox x:Name="RotationBox" />
+                        <TextBlock Text="°" Style="{StaticResource FieldLabel}" />
+                        <Button Content="-90°" Click="OnRotateLeft" />
+                        <Button Content="+90°" Click="OnRotateRight" />
+                    </WrapPanel>
+                    <WrapPanel>
+                        <TextBlock Text="不透明度" Style="{StaticResource FieldLabel}" Width="64" />
+                        <Slider x:Name="OpacitySlider" Width="150" Minimum="5" Maximum="100" VerticalAlignment="Center"
+                                ValueChanged="OnOpacityChanged" IsMoveToPointEnabled="True" />
+                        <TextBlock x:Name="OpacityInfo" Style="{StaticResource FieldLabel}" Margin="6,0,0,0" />
+                    </WrapPanel>
+                    <WrapPanel Margin="0,6,0,0">
+                        <Button Content="2 点で縮尺を合わせる" Click="OnScaleByTwoPoints" FontWeight="SemiBold"
+                                ToolTip="3D ビューで下絵の上の 2 点をクリックし、その実際の距離を入れると、1 点目を基準に大きさを合わせます。&#x0a;寸法のわかる 2 点（線路の中心線の間、柱と柱など）を、下絵が見える向きでズームしてから選ぶと正確です" />
+                        <Button Content="1 点目を原点へ" Click="OnMovePointToOrigin"
+                                ToolTip="3D ビューで下絵の上の 1 点をクリックすると、その点が原点 (0,0,0) に来るよう下絵を動かします" />
+                    </WrapPanel>
+                </StackPanel>
+            </GroupBox>
+
+            <Expander x:Name="ObjectSection" Header="参考オブジェクト（モデルを見比べる）" IsExpanded="False" Margin="0,8,0,0">
+                <local:ReferenceObjectPanel x:Name="Objects" Margin="4,4,0,4" />
+            </Expander>
+
+            <TextBlock TextWrapping="Wrap" Foreground="{StaticResource SubTextBrush}" Margin="0,8,0,0" FontSize="11"
+                       Text="下絵をなぞって建物を作るには: 形を追加タブ →「描いて作る」で描く面を「上面図」に" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

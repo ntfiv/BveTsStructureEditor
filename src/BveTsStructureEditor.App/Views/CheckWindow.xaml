@@ -1,0 +1,9 @@
+<Window x:Class="BveTsStructureEditor.App.Views.CheckWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:v="clr-namespace:BveTsStructureEditor.App.Views"
+        Title="BVE 互換チェック" Width="520" Height="600" MinWidth="360" MinHeight="300"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{StaticResource PanelBrush}">
+    <v:CheckPanel x:Name="Panel" />
+</Window>

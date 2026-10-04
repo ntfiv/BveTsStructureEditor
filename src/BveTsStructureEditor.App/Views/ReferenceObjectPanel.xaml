@@ -1,0 +1,76 @@
+<UserControl x:Class="BveTsStructureEditor.App.Views.ReferenceObjectPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <!-- 下絵パネルの入力欄の動き（確定時に下絵を書き換える）を引き継がないよう、ここで決め直す -->
+        <Style TargetType="TextBox">
+            <Setter Property="Margin" Value="2" />
+            <Setter Property="Padding" Value="2,1" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Width" Value="60" />
+            <EventSetter Event="LostFocus" Handler="OnPositionCommitted" />
+            <EventSetter Event="KeyDown" Handler="OnPositionKeyDown" />
+        </Style>
+    </UserControl.Resources>
+    <StackPanel>
+        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource SubTextBrush}" Margin="0,0,0,4"
+                   Text="見比べるために半透明で置くモデル（編集・選択はできず、.x には書き出しません）。"
+                   ToolTip="既存のストラクチャや車両の .x / .pmx / .bvex を並べて、大きさや位置を合わせるときに使います。&#x0a;作業ファイル (.bvex) には保存されます。このタブを開いている間は、モデルをドロップすると参考オブジェクトになります。" />
+        <DockPanel Margin="0,0,0,4">
+            <Button DockPanel.Dock="Right" Content="削除" Click="OnRemove" />
+            <Button DockPanel.Dock="Right" Content="読み直す" Click="OnReload" ToolTip="ファイルを外で書き換えたときに読み直します" />
+            <Button DockPanel.Dock="Right" Content="モデルを追加…" Click="OnAdd" FontWeight="SemiBold" />
+            <TextBlock Text="参考オブジェクト" FontWeight="SemiBold" VerticalAlignment="Center" />
+        </DockPanel>
+        <ListBox x:Name="List" Height="96" SelectionChanged="OnSelected" HorizontalContentAlignment="Stretch">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <DockPanel>
+                        <CheckBox DockPanel.Dock="Left" IsChecked="{Binding Visible, Mode=OneWay}" Tag="{Binding}"
+                                  Click="OnVisibleClick" Margin="0,0,6,0" VerticalAlignment="Center" />
+                        <TextBlock DockPanel.Dock="Right" Text="{Binding Info}" Foreground="#777" FontSize="11" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip="{Binding FullPath}" />
+                    </DockPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <GroupBox x:Name="Editor" Header="選んだ参考オブジェクト" Padding="6,4" Margin="0,6,0,0" IsEnabled="False">
+            <StackPanel>
+                <WrapPanel>
+                    <TextBlock Text="位置 X/Y/Z" Style="{StaticResource FieldLabel}" Width="64" />
+                    <TextBox x:Name="OxBox" />
+                    <TextBox x:Name="OyBox" />
+                    <TextBox x:Name="OzBox" />
+                    <TextBlock Text="m" Style="{StaticResource FieldLabel}" />
+                </WrapPanel>
+                <WrapPanel ToolTip="モデルの原点まわりに回します（X → Y → Z の順。編集タブの変形欄と同じ向き）">
+                    <TextBlock Text="回転 X/Y/Z" Style="{StaticResource FieldLabel}" Width="64" />
+                    <TextBox x:Name="RxBox" />
+                    <TextBox x:Name="RyBox" />
+                    <TextBox x:Name="RzBox" />
+                    <TextBlock Text="°" Style="{StaticResource FieldLabel}" />
+                </WrapPanel>
+                <WrapPanel>
+                    <TextBlock Text="" Width="64" />
+                    <Button Content="Y -90°" Click="OnRotateLeft" />
+                    <Button Content="Y +90°" Click="OnRotateRight" />
+                    <Button Content="回転を戻す" Click="OnResetRotation" />
+                </WrapPanel>
+                <WrapPanel>
+                    <TextBlock Text="" Width="64" />
+                    <Button Content="地面をクリックして置く" Click="OnPlaceOnGround"
+                            ToolTip="3D ビューの地面 (Y=0) をクリックした位置へ動かします（高さはそのまま）。Esc で取り消し" />
+                    <Button Content="原点に戻す" Click="OnResetPosition" />
+                </WrapPanel>
+                <WrapPanel>
+                    <TextBlock Text="不透明度" Style="{StaticResource FieldLabel}" Width="64" />
+                    <Slider x:Name="OpacitySlider" Width="150" Minimum="5" Maximum="100" VerticalAlignment="Center"
+                            ValueChanged="OnOpacityChanged" IsMoveToPointEnabled="True" />
+                    <TextBlock x:Name="OpacityInfo" Style="{StaticResource FieldLabel}" Margin="6,0,0,0" />
+                </WrapPanel>
+                <TextBlock x:Name="FileInfo" TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource SubTextBrush}" Margin="0,2,0,0" />
+            </StackPanel>
+        </GroupBox>
+    </StackPanel>
+</UserControl>

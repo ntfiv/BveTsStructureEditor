@@ -1,0 +1,20 @@
+<UserControl x:Class="BveTsStructureEditor.App.Views.TextEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ae="http://icsharpcode.net/sharpdevelop/avalonedit">
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1" Padding="6,4">
+            <WrapPanel>
+                <Button Content="3D に反映 (Ctrl+Enter)" Click="OnApply" FontWeight="SemiBold" />
+                <Button Content="モデルから作り直す" Click="OnRegenerate" ToolTip="現在のモデルを書き出した形でテキストを作り直す（未反映の変更は消える）" />
+                <CheckBox x:Name="AutoApply" Content="入力が止まったら自動で反映" VerticalAlignment="Center" Margin="8,0" />
+            </WrapPanel>
+        </Border>
+        <Border x:Name="MessageBar" DockPanel.Dock="Bottom" Padding="8,4" Visibility="Collapsed" Background="#3A2A2A">
+            <TextBlock x:Name="MessageText" TextWrapping="Wrap" Foreground="#FFD0D0" />
+        </Border>
+        <ae:TextEditor x:Name="Editor" FontFamily="Consolas, BIZ UDGothic, MS Gothic" FontSize="13"
+                       ShowLineNumbers="True" Background="#1E2127" Foreground="#D7DAE0"
+                       LineNumbersForeground="#5C6370" WordWrap="False" />
+    </DockPanel>
+</UserControl>

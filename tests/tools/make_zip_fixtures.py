@@ -10,7 +10,7 @@ import struct
 import zlib
 from pathlib import Path
 
-OUT = Path(__file__).resolve().parent.parent / "BveXEditor.Core.Tests" / "Fixtures"
+OUT = Path(__file__).resolve().parent.parent / "BveTsStructureEditor.Core.Tests" / "Fixtures"
 CHUNK = 32768
 
 

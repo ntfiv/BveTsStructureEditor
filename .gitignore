@@ -8,6 +8,7 @@ TestResults/
 # 他の方が配布しているモデルは、再配布になるのでリポジトリに入れない。
 # 手元にあるときだけ、そのファイルを使うテストが走る（無ければ飛ばす。Fixtures.cs 参照）。
 /pmx/
-/tests/BveXEditor.Core.Tests/Fixtures/kodan.pmx
-/tests/BveXEditor.Core.Tests/Fixtures/WallUnder_QN_25m_*.pmx
-/tests/BveXEditor.Core.Tests/Fixtures/real_*.x
+/tests/BveTsStructureEditor.Core.Tests/Fixtures/kodan.pmx
+/tests/BveTsStructureEditor.Core.Tests/Fixtures/WallUnder_QN_25m_*.pmx
+/tests/BveTsStructureEditor.Core.Tests/Fixtures/real_*.x
+artifacts/

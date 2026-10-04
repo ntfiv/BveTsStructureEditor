@@ -1,0 +1,59 @@
+﻿<UserControl x:Class="BveTsStructureEditor.App.Views.ViewportView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:h="http://helix-toolkit.org/wpf"
+             Focusable="True">
+    <Grid>
+        <h:HelixViewport3D x:Name="View"
+                           ModelUpDirection="0,1,0"
+                           ShowCoordinateSystem="True"
+                           ShowViewCube="True"
+                           IsHeadLightEnabled="True"
+                           IsInertiaEnabled="False"
+                           Background="#2B2F36">
+            <h:HelixViewport3D.Camera>
+                <PerspectiveCamera Position="0,6,22" LookDirection="0,-4,-22" UpDirection="0,1,0" FieldOfView="45" NearPlaneDistance="0.05" />
+            </h:HelixViewport3D.Camera>
+            <ModelVisual3D>
+                <ModelVisual3D.Content>
+                    <Model3DGroup>
+                        <AmbientLight Color="#707070" />
+                        <!-- 上から（WPF 座標。-Y が下） -->
+                        <DirectionalLight Color="#707070" Direction="-0.3,-1,-0.4" />
+                        <DirectionalLight Color="#303030" Direction="0.4,0.3,0.6" />
+                    </Model3DGroup>
+                </ModelVisual3D.Content>
+            </ModelVisual3D>
+            <h:GridLinesVisual3D x:Name="Grid" Normal="0,1,0" LengthDirection="1,0,0"
+                                 Width="100" Length="100" MinorDistance="1" MajorDistance="5" Thickness="0.02" />
+        </h:HelixViewport3D>
+
+        <!-- ギズモ専用の層。同じカメラで重ねて描くので、モデルに隠れない -->
+        <Viewport3D x:Name="GizmoLayer" IsHitTestVisible="False" ClipToBounds="True">
+            <ModelVisual3D x:Name="OriginVisual" />
+            <ModelVisual3D x:Name="PreviewVisual" />
+            <ModelVisual3D x:Name="GizmoVisual" />
+            <ModelVisual3D x:Name="SelectedVertexVisual" />
+        </Viewport3D>
+
+        <Canvas x:Name="Overlay" IsHitTestVisible="False">
+            <Rectangle x:Name="RubberBand" Visibility="Collapsed" Stroke="#FFA030" StrokeThickness="1"
+                       StrokeDashArray="4 2" Fill="#22FFA030" />
+        </Canvas>
+
+        <!-- 視点の操作の説明。本文と ToolTip は ApplyNavigation が方式に合わせて入れる -->
+        <TextBlock x:Name="NavHint" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="8,0,0,6"
+                   Foreground="#99FFFFFF" FontSize="11" Background="Transparent"
+                   Text="右ドラッグ: 回転 / 中ドラッグ: 移動 / ホイール: ズーム（ここにマウスで操作一覧）"
+                   ToolTipService.InitialShowDelay="200">
+            <TextBlock.ToolTip>
+                <TextBlock x:Name="NavHintTip" />
+            </TextBlock.ToolTip>
+        </TextBlock>
+        <TextBlock x:Name="AxisHint" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,10,0"
+                   Foreground="#99FFFFFF" FontSize="11" IsHitTestVisible="False"
+                   Text="BVE 座標: X 右 / Y 上 / Z 進行方向（画面の奥）" />
+        <TextBlock x:Name="GuideLegend" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,6,0,0"
+                   Foreground="#CCFFFFFF" FontSize="11" IsHitTestVisible="False" Visibility="Collapsed" />
+    </Grid>
+</UserControl>

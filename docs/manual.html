@@ -1,5 +1,5 @@
-<title>BVE X Editor 使い方ガイド</title>
-<meta name="description" content="BVE Trainsim 用の .x ストラクチャを作る・直すための BVE X Editor の使い方と機能の説明書">
+<title>BveTs Structure Editor 使い方ガイド</title>
+<meta name="description" content="BVE Trainsim 用の .x ストラクチャを作る・直すための BveTs Structure Editor の使い方と機能の説明書">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=M+PLUS+1+Code:wght@400;600&display=swap">
@@ -235,8 +235,8 @@
 </style>
 
 <header class="masthead">
-  <div class="eyebrow">BVE X EDITOR ／ 利用者向け説明書</div>
-  <h1>BVE X Editor 使い方ガイド</h1>
+  <div class="eyebrow">BVETS STRUCTURE EDITOR ／ 利用者向け説明書</div>
+  <h1>BveTs Structure Editor 使い方ガイド</h1>
   <p class="lede">BVE Trainsim のストラクチャ（建物・看板・駅設備・車両など）を、DirectX の <code>.x</code> ファイルとして作ったり直したりする Windows 用のアプリです。この説明書では、画面の見方から形の作り方、BVE 向けの機能、保存と書き出しまでを順に説明します。</p>
   <div class="axes" aria-label="座標の向き">
     <span class="x"><b>X</b> 右</span>
@@ -279,7 +279,7 @@
     <!-- ───────── はじめに ───────── -->
     <section id="start">
       <h2>はじめに</h2>
-      <p>BVE X Editor では、次のようなことができます。</p>
+      <p>BveTs Structure Editor では、次のようなことができます。</p>
       <ul>
         <li>既存の <code>.x</code>（テキスト・バイナリ・圧縮のどれでも）を開いて手直しし、テキスト形式で保存する</li>
         <li>箱・板・円柱・パイプなどを組み合わせたり、図面や地図をなぞったりして、新しくストラクチャを作る</li>
@@ -289,7 +289,8 @@
       </ul>
 
       <h3>起動と終了</h3>
-      <p><span class="file">BveXEditor.App.exe</span> を起動します。<code>.x</code> / <code>.pmx</code> / <code>.bvex</code> をウィンドウにドラッグ＆ドロップするか、exe にファイルを渡しても開けます。画像ファイルを渡すと、新しいファイルにその画像の板を作ります。</p>
+      <p>動作には Windows 10 / 11（64 bit）と <a href="https://dotnet.microsoft.com/ja-jp/download/dotnet/10.0">.NET 10 デスクトップ ランタイム（x64）</a> が必要です（入っていないと、起動時にダウンロードの案内が出ます）。</p>
+      <p><span class="file">BveTsStructureEditor.exe</span> を起動します。<code>.x</code> / <code>.pmx</code> / <code>.bvex</code> をウィンドウにドラッグ＆ドロップするか、exe にファイルを渡しても開けます。画像ファイルを渡すと、新しいファイルにその画像の板を作ります。</p>
       <p>保存していない変更があるときは、閉じる前に保存するか確認します。</p>
 
       <div class="note"><b class="label">覚えておくと楽なこと</b>
@@ -682,27 +683,28 @@
       <p>項目を選んで <strong>選択</strong> で該当箇所を選び、「直せる」と出ているものは <strong>直す</strong> で自動修正できます（元に戻せます）。</p>
 
       <h3 id="repeater">Repeater 用に分割…</h3>
-      <p>Repeater は、ストラクチャを <strong>span ごとに、まっすぐのまま</strong> 繰り返し置きます。25 m の長さで作ったものをそのまま置くと曲線で軌道から外れるので、5 m ずつに割って 5 つのストラクチャを順に繰り返すと、曲線にもよく沿います。その「割る → 書き出す → 並べて確かめる」を 1 つの窓でできます。</p>
+      <p>Repeater は、ストラクチャを軌道に沿って <strong>interval ごとに、まっすぐのまま</strong> 繰り返し置きます。向きは、置いた点から軌道に沿って <strong>span</strong> 先の点へ向かう弦の向きです。25 m の長さで作ったものをそのまま置くと曲線で軌道から外れるので、5 m ずつに割って 5 つのストラクチャを順に繰り返すと、曲線にもよく沿います。その「割る → 書き出す → 並べて確かめる」を 1 つの窓でできます。</p>
       <p>対象は<strong>選択のあるメッシュ（選択が空なら全体）</strong>です。窓は開いたままモデルを編集でき、編集すると割り直します。</p>
       <div class="table-wrap">
         <table>
           <thead><tr><th>欄</th><th>すること</th></tr></thead>
           <tbody>
             <tr><td>ピースの長さ</td><td>進行方向 (Z) に切る間隔。切り目をまたぐ面は切って、UV も補間します。切り目にぴったり乗った面は、向いている側のピースに入れます（両方に入れるとちらつくため）</td></tr>
-            <tr><td>Z の範囲</td><td>ふだんは自動（対象の前後の端）。自分で入れることもできます。割り切れないときは、端数が最後のピースに残ります</td></tr>
-            <tr><td>重ね代</td><td>区間の終わりから先に伸ばす長さ。曲線では継ぎ目の外側に隙間が出るので、5 m 間隔のピースを 5.05 m のように少し長く切り出して重ねます。繰り返しの間隔（span）は 5 m のままです。<strong>半径から自動</strong> を押すと、下のプレビューの半径・間隔・並べ方と、モデルの左右の張り出しから、隙間が出ない最小の値を入れます</td></tr>
+            <tr><td>Z の範囲</td><td>ふだんは自動（対象の前後の端）。自分で入れることもできます</td></tr>
+            <tr><td>ピースの長さに満たない端数は飛ばす</td><td>既定は ON。25.2 m を 5 m ずつに分けたときの最後の 0.2 m のような短い区間は作らず、5 ピースにします。繰り返しの周期も満たしたピースのぶん（25 m）になり、回り込みもそこから先頭へつながります。外すと端数が最後のピースに残ります</td></tr>
+            <tr><td>重ね代</td><td>区間の終わりから先に伸ばす長さ。曲線では継ぎ目の外側に隙間が出るので、5 m 間隔のピースを 5.05 m のように少し長く切り出して重ねます。Repeater の interval・span は 5 m のままです。<strong>半径から自動 R</strong>（既定 ON・R80 m）なら、その半径の曲線に右・左どちらで置いても隙間が出ない最小の値を、モデルの左右の張り出しから計算して入れます（1 mm 単位で切り上げ）。これより緩い曲線ならそのまま使えます。外すと自分で入れられます</td></tr>
+            <tr><td>重なる面を持ち上げる</td><td>既定は ON・0.003 m。重ね代のところでは前後のピースの面がぴったり重なり、BVE でちらついて見えるので、隣り合うピースの高さを 0, +1, 0, +1 … 倍とずらします（数が奇数なら最後は +2 倍。最後と先頭の継ぎ目も高さが揃わないようにするため）。重ね代が 0 のときは何もしません</td></tr>
             <tr><td>伸ばした先は先頭から回り込む</td><td>Repeater は全体を繰り返すので、最後のピースの伸ばした先にはモデル先頭（0〜0.X m）の形と UV が続きます。面や頂点が増えるだけで、見た目は次の繰り返しの続きになります。外すと最後のピースだけ伸ばしません</td></tr>
             <tr><td>各ピースを Z=0 起点に揃える</td><td>Repeater は繰り返し位置にストラクチャの原点を置くので、ふつうは ON のまま</td></tr>
             <tr><td>面のない区間は飛ばす</td><td>空の区間はファイルを作りません。番号は元の区間のまま（飛び番）になります</td></tr>
             <tr><td>書き出し</td><td>出力先フォルダーとファイル名を決めて、<code>名前_00.x</code>、<code>名前_01.x</code> … と 1 ピース 1 ファイルで書き出します。テクスチャの相対パスは出力先から同じ画像を指すよう直します</td></tr>
-            <tr><td>曲線に並べてプレビュー</td><td>半径（正 = 右カーブ／負 = 左カーブ／0 = 直線）・間隔 span・本数を入れると、BVE と同じ置き方で 3D ビューに並べます。ピース自体は曲がらず、位置と向きだけが変わります</td></tr>
-            <tr><td>25 m ブロック単位で向きを変える</td><td>BVE は軌道を 25 m ごとの直線でつないでいるので、同じブロックの中のストラクチャは<strong>同じ向き</strong>になり、ブロックの境目でまとめて折れます。既定は ON（BVE と同じ）。外すと曲線そのものに沿って 1 本ずつ向きが変わります</td></tr>
-            <tr><td>モデルに反映</td><td>編集中のモデルの対象メッシュを、切り分けたピース（別メッシュ）に置き換えます。元の位置のままで、元に戻せます</td></tr>
+            <tr><td>曲線に並べてプレビュー</td><td>半径（正 = 右カーブ／負 = 左カーブ／0 = 直線）・interval・span・本数を入れると、BVE と同じ置き方で 3D ビューに並べます（既定で表示 ON）。interval ごとの点に置き、そこから span 先の点へ向かう弦の向きに合わせます。ピース自体は曲がらず、位置と向きだけが変わります。interval と span はピースの長さを変えると同じ値にそろいます</td></tr>
+            <tr><td>モデルに反映</td><td>編集中のモデルの対象メッシュを、切り分けたピース（別メッシュ）に置き換えます。元の位置のまま、重ね代・持ち上げなし、端数も残して分けます。元に戻せます</td></tr>
           </tbody>
         </table>
       </div>
       <div class="note"><b class="label">プレビューについて</b>
-        <p>並べて表示するのは見るだけで、モデルには入りません（窓を閉じると消えます）。緩和曲線・カント・勾配・横方向のオフセットは考えません。継ぎ目の隙間が気になるときは、<strong>重ね代</strong>を増やす（「半径から自動」で、その半径に必要な最小値が入ります）か、ピースを短くします。</p>
+        <p>並べて表示するのは見るだけで、モデルには入りません（窓を閉じると消えます）。緩和曲線・カント・勾配・横方向のオフセットは考えません。継ぎ目の隙間が気になるときは、<strong>重ね代</strong>を増やす（「半径から自動 R」の半径を小さくすると、その半径に必要な最小値が入ります）か、ピースを短くします。</p>
       </div>
 
       <h3>文字から看板を作る…</h3>
@@ -824,13 +826,13 @@
         <table>
           <thead><tr><th>場所</th><th>中身</th></tr></thead>
           <tbody>
-            <tr><td><span class="file">%AppData%\BveXEditor\references.json</span></td><td><code>.x</code> ごとの下絵の置き方</td></tr>
-            <tr><td><span class="file">%AppData%\BveXEditor\reference_objects.json</span></td><td><code>.x</code> ごとの参考オブジェクトの置き方</td></tr>
-            <tr><td><span class="file">%AppData%\BveXEditor\ui.json</span></td><td>折りたたみの開閉</td></tr>
-            <tr><td><span class="file">%AppData%\BveXEditor\navigation.json</span></td><td>視点の操作の方式と設定</td></tr>
-            <tr><td><span class="file">%AppData%\BveXEditor\recent_colors.json</span></td><td>パレットの最近使った色</td></tr>
-            <tr><td><span class="file">%AppData%\BveXEditor\recent.txt</span></td><td>最近のファイル</td></tr>
-            <tr><td><span class="file">%LocalAppData%\BveXEditor\gsi</span></td><td>取得した地理院地図の画像</td></tr>
+            <tr><td><span class="file">%AppData%\BveTsStructureEditor\references.json</span></td><td><code>.x</code> ごとの下絵の置き方</td></tr>
+            <tr><td><span class="file">%AppData%\BveTsStructureEditor\reference_objects.json</span></td><td><code>.x</code> ごとの参考オブジェクトの置き方</td></tr>
+            <tr><td><span class="file">%AppData%\BveTsStructureEditor\ui.json</span></td><td>折りたたみの開閉</td></tr>
+            <tr><td><span class="file">%AppData%\BveTsStructureEditor\navigation.json</span></td><td>視点の操作の方式と設定</td></tr>
+            <tr><td><span class="file">%AppData%\BveTsStructureEditor\recent_colors.json</span></td><td>パレットの最近使った色</td></tr>
+            <tr><td><span class="file">%AppData%\BveTsStructureEditor\recent.txt</span></td><td>最近のファイル</td></tr>
+            <tr><td><span class="file">%LocalAppData%\BveTsStructureEditor\gsi</span></td><td>取得した地理院地図の画像</td></tr>
           </tbody>
         </table>
       </div>
@@ -846,4 +848,4 @@
   </main>
 </div>
 
-<footer>BVE X Editor 使い方ガイド ／ 地理院タイルの出典: 国土地理院</footer>
+<footer>BveTs Structure Editor 使い方ガイド ／ 地理院タイルの出典: 国土地理院</footer>
