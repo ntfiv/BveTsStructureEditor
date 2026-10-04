@@ -2,7 +2,7 @@
 ======================
 
 バージョン : 0.1.0
-作者       : ntfiv
+作者       : NT/fiv
 配布ページ : https://github.com/ntfiv/BveTsStructureEditor
 種別       : フリーソフト（利用規約.txt を必ずお読みください）
 

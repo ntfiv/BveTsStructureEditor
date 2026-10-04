@@ -25,8 +25,8 @@
   <PropertyGroup>
     <Version>0.1.0</Version>
     <Product>BveTs Structure Editor</Product>
-    <Authors>ntfiv</Authors>
-    <Copyright>© 2026 ntfiv</Copyright>
+    <Authors>NT/fiv</Authors>
+    <Copyright>© 2026 NT/fiv</Copyright>
     <Description>BVE Trainsim 用ストラクチャ (.x) の作成・編集ツール</Description>
   </PropertyGroup>
 
